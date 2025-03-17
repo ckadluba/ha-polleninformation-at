@@ -1,0 +1,13 @@
+{
+  "name": "Home Assistant Development",
+  "image": "ghcr.io/home-assistant/devcontainer:latest",
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash"
+  },
+  "extensions": [
+    "ms-python.python",
+    "ms-python.vscode-pylance"
+  ],
+  "postCreateCommand": "pip install -r requirements.txt",
+  "remoteUser": "vscode"
+}

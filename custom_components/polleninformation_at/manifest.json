@@ -1,0 +1,15 @@
+{
+    "domain": "polleninformation_at",
+    "name": "Polleninformation.at",
+    "version": "0.0.2",
+    "documentation": "https://github.com/ckadluba/ha-polleninformation-at",
+    "dependencies": [],
+    "codeowners": [
+        "@ckadluba"
+    ],
+    "iot_class": "cloud_polling",
+    "requirements": [
+        "aiohttp"
+    ],
+    "config_flow": true
+}
