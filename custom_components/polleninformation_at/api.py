@@ -40,13 +40,9 @@ class PollenAPI:
                             _LOGGER.debug("No contamination data found in the response")
                     else:
                         _LOGGER.debug(f"No data available: {data.get('message')}")
-                        self._state = 0
-                        self._poll_title = "No data"
 
         except aiohttp.ClientError as e:
             _LOGGER.error(f"Error fetching pollen data: {e}")
-            self._state = "Error"
-            self._poll_title = "Error"
 
     @property
     def state(self):
