@@ -2,125 +2,141 @@ import logging
 import voluptuous as vol
 from datetime import timedelta
 
-from homeassistant.components.sensor import PLATFORM_SCHEMA, SensorEntity, SensorStateClass
-from homeassistant.const import CONF_NAME, STATE_UNKNOWN
+from homeassistant.components.sensor import (
+    PLATFORM_SCHEMA, 
+    SensorEntity, 
+    SensorStateClass,
+    ENTITY_ID_FORMAT
+)
+from homeassistant.const import CONF_NAME
 import homeassistant.helpers.config_validation as cv
-from .const import DOMAIN, INTEGRATION_NAME, DEFAULT_INTERVAL, CONF_INTERVAL, CONF_LOCATION, ICON_FLOWER_POLLEN
-from .api import PollenAPI
 
-POLLEN_TYPES={
-    "alternaria": 23,
-    "ambrosia": 6,
-    "cupressaceae": 17,
-    "alnus": 1,
-    "corylus": 3,
-    "fraxinus": 4,
-    "betula": 2,
-    "platanus": 16,
-    "poaceae": 5,
-    "secale": 291,
-    "urticaceae": 15,
-    "olea": 18,
-    "artemisia": 7
+from .const import (
+    DOMAIN,
+    INTEGRATION_NAME,
+    DEFAULT_INTERVAL,
+    CONF_API_KEY,
+    CONF_INTERVAL,
+    CONF_LOCATION,
+    ICON_FLOWER_POLLEN,
+)
+from .api import PollenApi
+
+POLLEN_TYPES = {
+    "alternaria": {"poll_id": 23, "name": "Pilzsporen (Alternaria)"}#,
+    # "ambrosia": {"poll_id": 6, "name": "Ragweed (Ambrosia)"},
+    # "cupressaceae": {"poll_id": 17, "name": "Zypressengewächse (Cupressaceae)"},
+    # "alnus": {"poll_id": 1, "name": "Erle (Alnus)"},
+    # "corylus": {"poll_id": 3, "name": "Hasel (Corylus)"},
+    # "fraxinus": {"poll_id": 4, "name": "Esche (Fraxinus)"},
+    # "betula": {"poll_id": 2, "name": "Birke (Betula)"},
+    # "platanus": {"poll_id": 16, "name": "Platane (Platanus)"},
+    # "poaceae": {"poll_id": 5, "name": "Gräser (Poaceae)"},
+    # "secale": {"poll_id": 291, "name": "Roggen (Secale)"},
+    # "urticaceae": {"poll_id": 15, "name": "Nessel- und Glaskraut (Urticaceae)"},
+    # "olea": {"poll_id": 18, "name": "Ölbaum (Olea)"},
+    # "artemisia": {"poll_id": 7, "name": "Beifuß (Artemisia)"}
 }
 
-SCAN_INTERVAL=timedelta(minutes=DEFAULT_INTERVAL)
+SCAN_INTERVAL = timedelta(minutes=DEFAULT_INTERVAL)
 
-PLATFORM_SCHEMA=PLATFORM_SCHEMA.extend({
+PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_LOCATION): cv.string,
     vol.Optional(CONF_NAME, default=INTEGRATION_NAME): cv.string
 })
 
-_LOGGER=logging.getLogger(__name__)
-
-async def async_setup_platform(hass, config, add_entities, discovery_info=None):
-    """Set up platform."""
-
-    name=config[CONF_NAME]
-    location=config[CONF_LOCATION]
-
-    _LOGGER.debug(f"Setup platform: name={name}, location={location}")
-
-    sensors=[]
-    for pollen_type, poll_id in POLLEN_TYPES.items():
-        sensors.append(PollenSensor(hass, name, location, poll_id, f"{name}_{pollen_type}"))
-
-    add_entities(sensors, True)
+_LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Set up sensor."""
+    """Setzt die Sensor-Integration über die UI (Config Flow) auf."""
     
-    name=config_entry.data.get(CONF_NAME, INTEGRATION_NAME)
-    location=config_entry.data.get(CONF_LOCATION)
+    name = config_entry.data.get(CONF_NAME, INTEGRATION_NAME)
+    location = config_entry.data.get(CONF_LOCATION)
+    api_key = config_entry.options.get(CONF_API_KEY, config_entry.data.get(CONF_API_KEY))
 
-    _LOGGER.debug(f"Setup entry: name={name}, location={location}")
+    _LOGGER.info(f"🔄 Setup entry gestartet: name={name}, location={location}")
 
-    sensors=[]
-    for pollen_type, poll_id in POLLEN_TYPES.items():
-        sensors.append(PollenSensor(hass, name, location, poll_id, f"{DOMAIN}_{pollen_type}"))
+    sensors = create_sensors(hass, name, location, api_key)
+    async_add_entities(sensors, update_before_add=True)
 
-    async_add_entities(sensors, True)
-    
+    _LOGGER.info(f"✅ {len(sensors)} Sensor(en) hinzugefügt.")
+
     # Set up config change listener
     config_entry.async_on_unload(
         config_entry.add_update_listener(async_update_options)
     )
 
+def create_sensors(hass, name, location, api_key):
+    """Erstellt eine Liste von PollenSensoren und prüft, ob sie bereits existieren."""
+    sensors = []
+
+    for pollen_type, item in POLLEN_TYPES.items():
+        sensors.append(PollenSensor(hass, item["poll_id"], pollen_type, item["name"], api_key))
+
+    return sensors
+
 async def async_update_options(hass, config_entry):
     """React to config updates"""
-    _LOGGER.info("Config entry options changed, reloading integration...")
+    _LOGGER.info("🔄 Config entry options geändert, Integration wird neu geladen...")
     await hass.config_entries.async_reload(config_entry.entry_id)
 
 class PollenSensor(SensorEntity):
     """Polleninformation.at Sensor."""
 
-    def __init__(self, hass, name, location, poll_id, sensor_name):
+    def __init__(self, hass, poll_id, pollen_type, pollen_name, api_key):
         """Initialize the sensor."""
-        self.hass=hass
-        self._name=name
-        self._location=location
-        self._state=STATE_UNKNOWN
-        self._poll_title=None
-        self._poll_id=poll_id
-        self._sensor_name=sensor_name
-        self.api=PollenAPI(hass, poll_id)
-        self._attr_icon=ICON_FLOWER_POLLEN
-        self._attr_state_class=SensorStateClass.MEASUREMENT
-        self.entity_id=f"sensor.{self._sensor_name}"
-        _LOGGER.debug(f"Initialized PollenSensor: name={self._sensor_name}, poll_id={self._poll_id}")
+        
+        self._api = PollenApi(hass, poll_id, api_key)
+        self._name = f"{DOMAIN}_{pollen_type}"
+        self._sensor_name = ENTITY_ID_FORMAT.format(self._name)
+        self._available = True
 
-    async def async_update(self, _=None):
-        """Query data from API."""
-        await self.api.async_update()
-        self._state=self.api.state
-        self._poll_title=self.api.poll_title
-        self.async_write_ha_state()
-        _LOGGER.debug(f"Update PollenSensor: name={self._sensor_name}, state={self._state}")
+        self._attr_name = pollen_name
+        self._attr_unique_id = f"{DOMAIN}_{pollen_type}"
+        self._attr_entity_id = self._sensor_name
+        self._available = True        
+        self._attr_native_value: int | float | None = 0
+        self._attr_icon = ICON_FLOWER_POLLEN
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_native_unit_of_measurement = "Level"
 
-    @property
-    def name(self):
-        return self._sensor_name
+        _LOGGER.debug(f"✅ Initialisiert PollenSensor: name={self._sensor_name}")
+
+    # @property
+    # def name(self) -> str:
+    #     return self._name
 
     @property
-    def unique_id(self):
-        """Return a unique ID for the sensor."""
-        return self._sensor_name
+    def entity_id(self) -> str:
+        return self._attr_entity_id
+    @property.setter
+    def entity_id(self, new_entity_id) -> str:
+        return self._attr_entity_id = new_entity_id
 
+    # @property
+    # def unique_id(self) -> str:
+    #     """Return a unique ID for the sensor."""
+    #     return self._name
+    
     @property
-    def state_class(self):
-        """Return the state class of the sensor."""
-        return SensorStateClass.MEASUREMENT
-
-    @property
-    def state(self):
+    def state(self) -> int | None:
         return self._state
 
     @property
-    def extra_state_attributes(self):
-        return {
-            "poll_title": self._poll_title
-        }
+    def extra_state_attributes(self) -> dict:
+        return {"poll_title": self._poll_title}
 
-    @property
-    def should_poll(self):
-        return True
+    # @property
+    # def available(self) -> bool:
+    #     return self._available
+
+    async def async_update(self, _=None):
+        """Query data from API."""
+        await self._api.async_update()
+
+        self._state = self._api.state
+        self._poll_title = self._api.poll_title
+
+        self.async_write_ha_state()
+        
+        _LOGGER.debug(f"🔄 Update PollenSensor: {self._sensor_name}")
