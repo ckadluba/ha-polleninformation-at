@@ -1,4 +1,5 @@
 import importlib.util
+from dotenv import load_dotenv
 import os
 import sys
 import unittest
@@ -23,21 +24,16 @@ def load_pollen_api_class():
     sys.modules[api_spec.name] = api_module
     assert api_spec.loader is not None
     api_spec.loader.exec_module(api_module)
-    return getattr(api_module, "PollenAPI", api_module.PollenApi)
+    return getattr(api_module, "PollenApi", api_module.PollenApi)
 
 
 class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
     async def test_async_update_fetches_live_data(self):
         # Arrange
-        # if os.getenv("RUN_POLLEN_API_INTEGRATION_TEST") != "1":
-        #     self.skipTest(
-        #         "Set RUN_POLLEN_API_INTEGRATION_TEST=1 to run the live API integration test."
-        #     )
-
-        try:
-            import aiohttp  # noqa: F401
-        except ModuleNotFoundError as exc:
-            self.skipTest(f"Missing dependency for integration test: {exc}")
+        if os.getenv("RUN_POLLEN_API_INTEGRATION_TEST") != "1":
+            self.skipTest(
+                "Set RUN_POLLEN_API_INTEGRATION_TEST=1 to run the live API integration test."
+            )
 
         pollen_api_class = load_pollen_api_class()
 
@@ -62,3 +58,4 @@ class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
             api.state is not None or api.poll_title is not None,
             "Live API call returned neither state nor poll_title.",
         )
+load_dotenv()

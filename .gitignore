@@ -1,4 +1,5 @@
 # Home Assistant Devcontainer config ignores
+.env
 .devcontainer/config/.storage/
 .devcontainer/config/deps/
 .devcontainer/config/tts/
