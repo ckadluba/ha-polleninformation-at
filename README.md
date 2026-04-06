@@ -1,36 +1,77 @@
 # Home Assistant Polleninformation.at Integration
 
-TODO: Add description
+Custom Home Assistant integration for `polleninformation.at`.
 
-## Development
 
-Use a local virtual environment for development and live integration tests:
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python -m pip install aiohttp
-```
 
-The Home Assistant integration now reads the API key from the integration configuration entry. Configure the key in Home Assistant when setting up the integration, or later via the integration options.
 
-For the live development test, inject the API key via environment variable instead of hardcoding it:
 
-```powershell
-$env:RUN_POLLEN_API_INTEGRATION_TEST="1"
-$env:POLLENINFORMATION_AT_API_KEY="<your-api-key>"
-.\.venv\Scripts\python -m unittest tests.test_api_integration
-```
+## Development (in the Dev Container)
 
-Optional test inputs:
+All development steps and tests are performed inside the Dev Container. This ensures a consistent environment, just like in production.
 
-```powershell
-$env:POLLEN_API_TEST_LATITUDE="48.2082"
-$env:POLLEN_API_TEST_LONGITUDE="16.3738"
-$env:POLLEN_API_TEST_POLL_ID="23"
-```
+### Starting VS Code in the Dev Container
 
-Run the isolated unit test with:
+1. Open a WSL terminal (e.g., Ubuntu on Windows).
+2. Change to your project directory:
+	```bash
+	cd /path/to/ha-polleninformation-at
+	```
+3. Start VS Code in WSL:
+	```bash
+	code .
+	```
+4. If prompted, reopen the project in the Dev Container ("Reopen in Container").
+5. Wait until the Dev Container is fully started.
+6. In VS Code, select the Python interpreter inside the container (e.g., /usr/local/bin/python3) if not already selected.
 
-```powershell
+### Starting Home Assistant with the Integration in the Dev Container
+
+Once VS Code is running in the Dev Comtainer, perform the following steps to start Home Assistant with the integration.
+
+1. In the Run & Debug panel, select the configuration **Home Assistant: Debug current integration**.
+2. Start the debugger (F5 or green play button).
+
+Home Assistant will start in debug mode with your integration. Breakpoints in `custom_components/polleninformation_at` will be hit directly.
+
+After starting the debugger (F5), open [http://localhost:8123](http://localhost:8123) in your browser. On first start, create a Home Assistant user and add the "Polleninformation.at" integration via the UI.
+
+The Home Assistant test configuration is located at `.devcontainer/config/configuration.yaml`. The start script automatically links your integration, so code changes are picked up immediately.
+
+### Running integration tests
+
+To run integration tests like `test_async_update_fetches_live_data`:
+
+1. Copy the file `.env.example` to `.env` in the project root:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit the `.env` file and enter your real API key and (optionally) adjust the test parameters.
+
+   Example:
+   ```env
+   POLLENINFORMATION_AT_API_KEY=your-real-api-key
+   RUN_POLLEN_API_INTEGRATION_TEST=1
+   POLLEN_API_TEST_LATITUDE=48.2082
+   POLLEN_API_TEST_LONGITUDE=16.3738
+   POLLEN_API_TEST_POLL_ID=23
+   ```
+
+3. Run the test in a terminal inside the Dev Container:
+
+   ```bash
+   python -m unittest tests.test_api_integration
+   ```
+
+The test will only run and perform a live API call if the required variables are set in your `.env` file.
+
+### Running isolated unit tests
+
+To run the pure unit tests (without live API):
+
+```bash
 python -m unittest tests.test_api
 ```

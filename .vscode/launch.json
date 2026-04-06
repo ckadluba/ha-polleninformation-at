@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Home Assistant: Debug current integration",
+      "type": "python",
+      "request": "launch",
+      "module": "homeassistant",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "--config",
+        "${workspaceFolder}/.devcontainer/config",
+        "--debug"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "preLaunchTask": "Prepare Home Assistant config"
+    }
+  ]
+}

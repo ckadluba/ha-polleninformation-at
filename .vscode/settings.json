@@ -1,3 +1,11 @@
 {
-    "sarif-viewer.connectToGithubCodeScanning": "off"
+    "sarif-viewer.connectToGithubCodeScanning": "off",
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python.testing.pytestArgs": [
+        "tests",
+        "custom_components"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.terminal.useEnvFile": true
 }

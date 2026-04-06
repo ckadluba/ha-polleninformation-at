@@ -109,9 +109,11 @@ class PollenSensor(SensorEntity):
     @property
     def entity_id(self) -> str:
         return self._attr_entity_id
-    @property.setter
+    
+    @entity_id.setter
     def entity_id(self, new_entity_id) -> str:
-        return self._attr_entity_id = new_entity_id
+        self._attr_entity_id = new_entity_id
+        return self._attr_entity_id
 
     # @property
     # def unique_id(self) -> str:

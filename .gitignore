@@ -1,3 +1,14 @@
+# Home Assistant Devcontainer config ignores
+.env
+.devcontainer/config/.storage/
+.devcontainer/config/deps/
+.devcontainer/config/tts/
+.devcontainer/config/www/
+.devcontainer/config/*.db
+.devcontainer/config/*.db-shm
+.devcontainer/config/*.db-wal
+.devcontainer/config/home-assistant.log*
+.devcontainer/config/secrets.yaml
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
