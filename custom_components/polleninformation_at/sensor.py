@@ -13,31 +13,16 @@ from homeassistant.const import CONF_NAME
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import (
+from custom_components.polleninformation_at.const import (
     DOMAIN,
     INTEGRATION_NAME,
     CONF_API_KEY,
     CONF_LOCATION,
-    ICON_FLOWER_POLLEN,
     DEFAULT_INTERVAL,
+    POLLEN_TYPES
 )
-from .api import PollenApi
-
-POLLEN_TYPES = {
-    "alternaria": {"poll_id": 23, "name": "Pilzsporen (Alternaria)"}#,
-    # "ambrosia": {"poll_id": 6, "name": "Ragweed (Ambrosia)"},
-    # "cupressaceae": {"poll_id": 17, "name": "Zypressengewächse (Cupressaceae)"},
-    # "alnus": {"poll_id": 1, "name": "Erle (Alnus)"},
-    # "corylus": {"poll_id": 3, "name": "Hasel (Corylus)"},
-    # "fraxinus": {"poll_id": 4, "name": "Esche (Fraxinus)"},
-    # "betula": {"poll_id": 2, "name": "Birke (Betula)"},
-    # "platanus": {"poll_id": 16, "name": "Platane (Platanus)"},
-    # "poaceae": {"poll_id": 5, "name": "Gräser (Poaceae)"},
-    # "secale": {"poll_id": 291, "name": "Roggen (Secale)"},
-    # "urticaceae": {"poll_id": 15, "name": "Nessel- und Glaskraut (Urticaceae)"},
-    # "olea": {"poll_id": 18, "name": "Ölbaum (Olea)"},
-    # "artemisia": {"poll_id": 7, "name": "Beifuß (Artemisia)"}
-}
+from custom_components.polleninformation_at.api import PollenApi
+from custom_components.polleninformation_at.sensor_entity import PollenSensor
 
 SCAN_INTERVAL = timedelta(hours=DEFAULT_INTERVAL)
 
@@ -105,32 +90,4 @@ async def async_update_options(hass, config_entry):
     await hass.config_entries.async_reload(config_entry.entry_id)
 
 
-class PollenSensor(SensorEntity):
-    """Polleninformation.at Sensor using DataUpdateCoordinator."""
 
-    def __init__(self, coordinator, pollen_type, pollen_name):
-        self.coordinator = coordinator
-        self._pollen_type = pollen_type
-        self._attr_name = pollen_name
-        self._attr_unique_id = f"{DOMAIN}_{pollen_type}"
-        self._attr_entity_id = ENTITY_ID_FORMAT.format(f"{DOMAIN}_{pollen_type}")
-        self._attr_icon = ICON_FLOWER_POLLEN
-        self._attr_state_class = SensorStateClass.MEASUREMENT
-        self._attr_native_unit_of_measurement = "Level"
-
-    @property
-    def state(self) -> int | None:
-        data = self.coordinator.data.get(self._pollen_type, {})
-        return data.get("state")
-
-    @property
-    def extra_state_attributes(self) -> dict:
-        data = self.coordinator.data.get(self._pollen_type, {})
-        return {"poll_title": data.get("poll_title")}
-
-    @property
-    def available(self) -> bool:
-        return self.state is not None
-
-    async def async_update(self):
-        await self.coordinator.async_request_refresh()

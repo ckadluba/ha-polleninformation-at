@@ -6,7 +6,6 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 
-
 API_PATH = (
     Path(__file__).resolve().parents[1]
     / "custom_components"
@@ -20,9 +19,14 @@ def load_pollen_api_class():
         "polleninformation_at_api_integration",
         API_PATH,
     )
+    if api_spec is None:
+        raise ImportError(f"Could not load spec for {API_PATH}")
     api_module = importlib.util.module_from_spec(api_spec)
+    if api_spec.name is None:
+        raise ImportError(f"api_spec.name is None for {API_PATH}")
     sys.modules[api_spec.name] = api_module
-    assert api_spec.loader is not None
+    if api_spec.loader is None:
+        raise ImportError(f"api_spec.loader is None for {API_PATH}")
     api_spec.loader.exec_module(api_module)
     return getattr(api_module, "PollenApi", api_module.PollenApi)
 
@@ -58,4 +62,7 @@ class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
             api.state is not None or api.poll_title is not None,
             "Live API call returned neither state nor poll_title.",
         )
-load_dotenv()
+        
+if __name__ == "__main__":
+    load_dotenv()
+    unittest.main()
