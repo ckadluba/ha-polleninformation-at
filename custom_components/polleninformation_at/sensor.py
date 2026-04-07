@@ -3,24 +3,19 @@ import logging
 import voluptuous as vol
 from datetime import timedelta
 
-from homeassistant.components.sensor import (
-    PLATFORM_SCHEMA,
-    SensorEntity,
-    SensorStateClass,
-    ENTITY_ID_FORMAT
-)
+from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.const import CONF_NAME
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from custom_components.polleninformation_at.const import (
-    DOMAIN,
     INTEGRATION_NAME,
     CONF_API_KEY,
     CONF_LOCATION,
     DEFAULT_INTERVAL,
     POLLEN_TYPES
 )
+
 from custom_components.polleninformation_at.api import PollenApi
 from custom_components.polleninformation_at.sensor_entity import PollenSensor
 
@@ -41,24 +36,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     api_key = config_entry.options.get(CONF_API_KEY, config_entry.data.get(CONF_API_KEY))
 
     _LOGGER.info(f"🔄 Setup entry started: name={name}, location={location}")
-
-    async def async_update_data():
-        data = {}
-        for pollen_type, item in POLLEN_TYPES.items():
-            api = PollenApi(hass, item["poll_id"], api_key)
-            try:
-                await api.async_update()
-                data[pollen_type] = {
-                    "state": api.state,
-                    "poll_title": api.poll_title,
-                }
-            except Exception as err:
-                _LOGGER.error(f"Error updating pollen data for {pollen_type}: {err}")
-                data[pollen_type] = {
-                    "state": None,
-                    "poll_title": None,
-                }
-        return data
 
     coordinator = DataUpdateCoordinator(
         hass,
@@ -82,6 +59,17 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         config_entry.add_update_listener(async_update_options)
     )
 
+
+
+    async def async_update_data():
+        try:
+            api = PollenApi(hass, api_key)
+            await api.async_update()
+            # Store the full API response in the coordinator
+            return getattr(api, '_raw_response', {})
+        except Exception as err:
+            _LOGGER.error(f"Error updating pollen data: {err}")
+            return {}
 
 
 async def async_update_options(hass, config_entry):

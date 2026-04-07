@@ -49,7 +49,13 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
         # Arrange
         coordinator = MagicMock()
         coordinator.data = {
-            "alternaria": {"state": 7, "poll_title": "TestTitle"}
+            "contamination": [
+                {
+                    "poll_id": "alternaria",
+                    "contamination_1": 7,
+                    "poll_title": "TestTitle",
+                }
+            ]
         }
         pollen_type = "alternaria"
         pollen_name = "Pilzsporen (Alternaria)"

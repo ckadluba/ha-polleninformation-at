@@ -75,21 +75,20 @@ class TestPollenSensorAsyncUpdate(unittest.IsolatedAsyncioTestCase):
 
     async def test_async_update_calls_api_with_configured_values(self):
         # Arrange
-        latitude = 48.2
-        longitude = 16.37
-        api_key = "testkey"
-        poll_id = 23
         pollen_type = "alternaria"
         pollen_name = "Pilzsporen (Alternaria)"
 
-        # Mock hass with config
-        hass = MagicMock()
-        hass.config.latitude = latitude
-        hass.config.longitude = longitude
-
         # Patch coordinator and test async_update
         coordinator = MagicMock()
-        coordinator.data = {pollen_type: {"state": 1, "poll_title": "TestTitle"}}
+        coordinator.data = {
+            "contamination": [
+                {
+                    "poll_id": "alternaria",
+                    "contamination_1": 1,
+                    "poll_title": "TestTitle",
+                }
+            ]
+        }
         coordinator.async_request_refresh = AsyncMock()
 
         sensor = self.PollenSensor(coordinator, pollen_type, pollen_name)

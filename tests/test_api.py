@@ -79,11 +79,11 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
             "polleninformation_at_api.aiohttp.ClientSession",
             return_value=session,
         ):
-            api = PollenApi(hass, 23, api_key)
+            api = PollenApi(hass, api_key)
             await api.async_update()
 
         # Assert
         session.get.assert_called_once()
         self.assertIn(f"apikey={api_key}", session.get.call_args.args[0])
-        self.assertEqual(api.state, 3)
-        self.assertEqual(api.poll_title, "Pilzsporen (Alternaria)")
+        # The new API only stores the raw response
+        self.assertEqual(api._raw_response, payload)

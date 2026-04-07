@@ -1,10 +1,15 @@
 import importlib.util
+import importlib
 from dotenv import load_dotenv
 import os
 import sys
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+
+# Ensure aiohttp is not mocked or None from previous tests
+if "aiohttp" in sys.modules:
+    del sys.modules["aiohttp"]
 
 API_PATH = (
     Path(__file__).resolve().parents[1]
@@ -48,20 +53,15 @@ class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
             )
         latitude = float(os.getenv("POLLEN_API_TEST_LATITUDE", "48.2082"))
         longitude = float(os.getenv("POLLEN_API_TEST_LONGITUDE", "16.3738"))
-        poll_id = int(os.getenv("POLLEN_API_TEST_POLL_ID", "23"))
         hass = SimpleNamespace(config=SimpleNamespace(latitude=latitude, longitude=longitude))
-        api = pollen_api_class(hass, poll_id, api_key)
+        api = pollen_api_class(hass, api_key)
 
         # Act
         await api.async_update()
 
         # Assert
-        self.assertIsInstance(api.state, int | type(None))
-        self.assertIsInstance(api.poll_title, str | type(None))
-        self.assertTrue(
-            api.state is not None or api.poll_title is not None,
-            "Live API call returned neither state nor poll_title.",
-        )
+        self.assertIsInstance(api._raw_response, dict)
+        self.assertIn("contamination", api._raw_response)
         
 if __name__ == "__main__":
     load_dotenv()
