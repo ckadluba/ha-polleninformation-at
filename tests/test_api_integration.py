@@ -39,18 +39,14 @@ def load_pollen_api_class():
 class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
     async def test_async_update_fetches_live_data(self):
         # Arrange
-        if os.getenv("RUN_POLLEN_API_INTEGRATION_TEST") != "1":
-            self.skipTest(
-                "Set RUN_POLLEN_API_INTEGRATION_TEST=1 to run the live API integration test."
-            )
-
-        pollen_api_class = load_pollen_api_class()
-
         api_key = os.getenv("POLLENINFORMATION_AT_API_KEY")
         if not api_key:
             self.skipTest(
                 "Set POLLENINFORMATION_AT_API_KEY to run the live API integration test."
             )
+
+        pollen_api_class = load_pollen_api_class()
+
         latitude = float(os.getenv("POLLEN_API_TEST_LATITUDE", "48.2082"))
         longitude = float(os.getenv("POLLEN_API_TEST_LONGITUDE", "16.3738"))
         hass = SimpleNamespace(config=SimpleNamespace(latitude=latitude, longitude=longitude))
@@ -62,6 +58,16 @@ class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
         # Assert
         self.assertIsInstance(api._raw_response, dict)
         self.assertIn("contamination", api._raw_response)
+
+        # Additional asserts for each poll_id in POLLEN_TYPES
+        from custom_components.polleninformation_at.const import POLLEN_TYPES
+        contamination = api._raw_response.get("contamination", {})
+        contamination_dict = {str(item["poll_id"]): item for item in contamination if "poll_id" in item}
+
+        for pollen_key, pollen_info in POLLEN_TYPES.items():
+            poll_id = pollen_info["poll_id"]
+            with self.subTest(poll_id=poll_id, pollen_key=pollen_key):
+                self.assertIn(str(poll_id), contamination_dict, f"Poll ID {poll_id} ({pollen_key}) missing in contamination data")
         
 if __name__ == "__main__":
     load_dotenv()
