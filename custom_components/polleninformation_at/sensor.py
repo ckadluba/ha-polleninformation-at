@@ -37,6 +37,16 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     _LOGGER.info(f"🔄 Setup entry started: name={name}, location={location}")
 
+    async def async_update_data():
+        try:
+            api = PollenApi(hass, api_key)
+            await api.async_update()
+            # Store the full API response in the coordinator
+            return getattr(api, '_raw_response', {})
+        except Exception as err:
+            _LOGGER.error(f"Error updating pollen data: {err}")
+            return {}
+
     coordinator = DataUpdateCoordinator(
         hass,
         _LOGGER,
@@ -58,19 +68,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     config_entry.async_on_unload(
         config_entry.add_update_listener(async_update_options)
     )
-
-
-
-    async def async_update_data():
-        try:
-            api = PollenApi(hass, api_key)
-            await api.async_update()
-            # Store the full API response in the coordinator
-            return getattr(api, '_raw_response', {})
-        except Exception as err:
-            _LOGGER.error(f"Error updating pollen data: {err}")
-            return {}
-
 
 async def async_update_options(hass, config_entry):
     """React to config updates"""
