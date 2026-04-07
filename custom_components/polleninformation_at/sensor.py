@@ -58,7 +58,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     await coordinator.async_config_entry_first_refresh()
 
     sensors = [
-        PollenSensor(coordinator, pollen_type, item["name"])
+        PollenSensor(coordinator, pollen_type, item["poll_id"], item["name"])
         for pollen_type, item in POLLEN_TYPES.items()
     ]
     async_add_entities(sensors, update_before_add=True)
