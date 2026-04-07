@@ -4,10 +4,7 @@ from homeassistant.core import callback
 from .const import (
     DOMAIN,
     INTEGRATION_NAME,
-    DEFAULT_INTERVAL,
-    MIN_INTERVAL,
     CONF_API_KEY,
-    CONF_INTERVAL,
 )
 
 class PolleninformationAtConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -29,9 +26,7 @@ class PolleninformationAtConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({
-                vol.Required(CONF_API_KEY): str,
-                vol.Required(CONF_INTERVAL, default=DEFAULT_INTERVAL): 
-                    vol.All(vol.Coerce(int), vol.Range(min=MIN_INTERVAL))
+                vol.Required(CONF_API_KEY): str
             })
         )
 
@@ -56,8 +51,6 @@ class PolleninformationAtOptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_API_KEY,
                         self.config_entry.data.get(CONF_API_KEY, ""),
                     ),
-                ): str,
-                vol.Required(CONF_INTERVAL, default=self.config_entry.options.get(CONF_INTERVAL, DEFAULT_INTERVAL)): 
-                    vol.All(vol.Coerce(int), vol.Range(min=MIN_INTERVAL)) 
+                ): str
             })
         )
