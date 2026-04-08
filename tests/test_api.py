@@ -87,3 +87,40 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
         self.assertIn(f"apikey={api_key}", session.get.call_args.args[0])
         # The new API only stores the raw response
         self.assertEqual(api._raw_response, payload)
+
+    async def test_async_update_uses_lat_lon_from_config(self):
+        # Arrange
+        hass = SimpleNamespace(config=SimpleNamespace(latitude=47.0, longitude=15.0))
+        api_key = "test-key"
+        payload = {"contamination": []}
+        response = FakeResponse(payload)
+        session = FakeClientSession(response)
+
+        # Act
+        with patch("polleninformation_at_api.aiohttp.ClientSession", return_value=session):
+            api = PollenApi(hass, api_key)
+            await api.async_update()
+
+        # Assert
+        session.get.assert_called_once()
+        url = session.get.call_args.args[0]
+        assert "latitude=47.0" in url
+        assert "longitude=15.0" in url
+
+    async def test_async_update_uses_api_key_in_url(self):
+        # Arrange
+        hass = SimpleNamespace(config=SimpleNamespace(latitude=47.0, longitude=15.0))
+        api_key = "my-special-key"
+        payload = {"contamination": []}
+        response = FakeResponse(payload)
+        session = FakeClientSession(response)
+
+        # Act
+        with patch("polleninformation_at_api.aiohttp.ClientSession", return_value=session):
+            api = PollenApi(hass, api_key)
+            await api.async_update()
+
+        # Assert
+        session.get.assert_called_once()
+        url = session.get.call_args.args[0]
+        assert f"apikey={api_key}" in url

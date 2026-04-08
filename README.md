@@ -53,8 +53,7 @@ To run integration tests like `test_async_update_fetches_live_data`:
 
    Example:
    ```env
-   POLLENINFORMATION_AT_API_KEY=your-real-api-key
-   RUN_POLLEN_API_INTEGRATION_TEST=1
+POLLENINFORMATION_AT_API_KEY=your-api-key-here # Comment this line to skip test_async_update_fetches_live_data
    POLLEN_API_TEST_LATITUDE=48.2082
    POLLEN_API_TEST_LONGITUDE=16.3738
    POLLEN_API_TEST_POLL_ID=23
@@ -66,12 +65,14 @@ To run integration tests like `test_async_update_fetches_live_data`:
    python -m unittest tests.test_api_integration
    ```
 
-The test will only run and perform a live API call if the required variables are set in your `.env` file.
+The test will only run and perform a live API call if the variable `POLLENINFORMATION_AT_API_KEY` is 
+set in your `.env` file. Be careful not to run the live API test too frequently. Your API key might get 
+rate limited or even revoked if you use the Polleninformation.at API ecessively.
 
 ### Running isolated unit tests
 
-To run the pure unit tests (without live API):
+To run all unit and integration tests (recommended):
 
 ```bash
-python -m unittest tests.test_api
+pytest
 ```
