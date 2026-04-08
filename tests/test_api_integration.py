@@ -59,15 +59,15 @@ class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(api._raw_response, dict)
         self.assertIn("contamination", api._raw_response)
 
-        # Additional asserts for each poll_id in POLLEN_TYPES
+        # Additional asserts for each pollen_id in POLLEN_TYPES
         from custom_components.polleninformation_at.const import POLLEN_TYPES
         contamination = api._raw_response.get("contamination", {})
         contamination_dict = {str(item["poll_id"]): item for item in contamination if "poll_id" in item}
 
         for pollen_key, pollen_info in POLLEN_TYPES.items():
-            poll_id = pollen_info["poll_id"]
-            with self.subTest(poll_id=poll_id, pollen_key=pollen_key):
-                self.assertIn(str(poll_id), contamination_dict, f"Poll ID {poll_id} ({pollen_key}) missing in contamination data")
+            pollen_id = pollen_info["pollen_id"]
+            with self.subTest(pollen_id=pollen_id, pollen_key=pollen_key):
+                self.assertIn(str(pollen_id), contamination_dict, f"Poll ID {pollen_id} ({pollen_key}) missing in contamination data")
         
 if __name__ == "__main__":
     load_dotenv()

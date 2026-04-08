@@ -56,7 +56,7 @@ To run integration tests like `test_async_update_fetches_live_data`:
 POLLENINFORMATION_AT_API_KEY=your-api-key-here # Comment this line to skip test_async_update_fetches_live_data
    POLLEN_API_TEST_LATITUDE=48.2082
    POLLEN_API_TEST_LONGITUDE=16.3738
-   POLLEN_API_TEST_POLL_ID=23
+   POLLEN_API_TEST_POLLEN_ID=23
    ```
 
 3. Run the test in a terminal inside the Dev Container:

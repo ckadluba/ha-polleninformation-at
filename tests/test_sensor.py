@@ -127,7 +127,7 @@ class TestPollenSensorAsyncUpdate(unittest.IsolatedAsyncioTestCase):
         coordinator.data = {
             "contamination": [
                 {
-                    "poll_id": 23,
+                    "pollen_id": 23,
                     "contamination_1": 1,
                     "poll_title": "TestTitle",
                 }
@@ -210,9 +210,9 @@ class TestAsyncSetupEntry(unittest.IsolatedAsyncioTestCase):
             await self._async_setup_entry(hass, config_entry, async_add_entities)
 
         entities = async_add_entities.call_args.args[0]
-        registered_poll_ids = {e._pollen_id for e in entities}
-        expected_poll_ids = {item["poll_id"] for item in self.POLLEN_TYPES.values()}
-        self.assertEqual(registered_poll_ids, expected_poll_ids)
+        registered_pollen_ids = {e._pollen_id for e in entities}
+        expected_pollen_ids = {item["pollen_id"] for item in self.POLLEN_TYPES.values()}
+        self.assertEqual(registered_pollen_ids, expected_pollen_ids)
 
     async def test_registered_sensors_have_correct_pollen_types(self):
         config_entry = self._make_config_entry()

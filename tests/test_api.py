@@ -65,7 +65,7 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
         payload = {
             "contamination": [
                 {
-                    "poll_id": 23,
+                    "pollen_id": 23,
                     "contamination_1": 3,
                     "poll_title": "Pilzsporen (Alternaria)",
                 }
