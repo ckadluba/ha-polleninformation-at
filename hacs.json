@@ -1,7 +1,6 @@
 {
     "name": "Polleninformation.at",
-    "domains": [
-        "polleninformation_at"
-    ],
+    "render_readme": true,
+    "homeassistant": "2026.4.0",
     "country": "AT"
 }
