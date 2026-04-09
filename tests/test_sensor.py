@@ -25,6 +25,7 @@ ha_const_mock.CONF_NAME = "name"
 ha_helpers_mock = types.ModuleType("homeassistant.helpers")
 ha_helpers_cv_mock = types.ModuleType("homeassistant.helpers.config_validation")
 ha_helpers_cv_mock.string = str
+ha_helpers_cv_mock.config_entry_only_config_schema = lambda domain: None
 ha_helpers_update_coordinator_mock = types.ModuleType("homeassistant.helpers.update_coordinator")
 ha_helpers_update_coordinator_mock.DataUpdateCoordinator = object
 ha_helpers_update_coordinator_mock.UpdateFailed = Exception
@@ -127,7 +128,7 @@ class TestPollenSensorAsyncUpdate(unittest.IsolatedAsyncioTestCase):
         coordinator.data = {
             "contamination": [
                 {
-                    "pollen_id": 23,
+                    "poll_id": 23,
                     "contamination_1": 1,
                     "poll_title": "TestTitle",
                 }

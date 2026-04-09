@@ -18,6 +18,7 @@ ha_const_mock.CONF_NAME = "name"
 ha_helpers_mock = types.ModuleType("homeassistant.helpers")
 ha_helpers_cv_mock = types.ModuleType("homeassistant.helpers.config_validation")
 ha_helpers_cv_mock.string = lambda x: x
+ha_helpers_cv_mock.config_entry_only_config_schema = lambda domain: None
 
 # Mock homeassistant.helpers.update_coordinator
 ha_helpers_update_coordinator_mock = types.ModuleType("homeassistant.helpers.update_coordinator")
@@ -97,7 +98,7 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
     # --- native_value ---
 
     def test_native_value_returns_contamination_level(self):
-        coordinator = self._coordinator_with([{"pollen_id": 23, "contamination_1": 5, "poll_title": "Alternaria"}])
+        coordinator = self._coordinator_with([{"poll_id": 23, "contamination_1": 5, "poll_title": "Alternaria"}])
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor.native_value, 5)
 
@@ -108,24 +109,24 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(sensor.native_value)
 
     def test_native_value_returns_none_when_pollen_id_not_found(self):
-        coordinator = self._coordinator_with([{"pollen_id": 99, "contamination_1": 3, "poll_title": "Other"}])
+        coordinator = self._coordinator_with([{"poll_id": 99, "contamination_1": 3, "poll_title": "Other"}])
         sensor = self._make_sensor(coordinator)
         self.assertIsNone(sensor.native_value)
 
     def test_native_value_returns_none_when_contamination_missing(self):
-        coordinator = self._coordinator_with([{"pollen_id": 23, "poll_title": "Alternaria"}])
+        coordinator = self._coordinator_with([{"poll_id": 23, "poll_title": "Alternaria"}])
         sensor = self._make_sensor(coordinator)
         self.assertIsNone(sensor.native_value)
 
     def test_native_value_returns_zero(self):
-        coordinator = self._coordinator_with([{"pollen_id": 23, "contamination_1": 0, "poll_title": "Alternaria"}])
+        coordinator = self._coordinator_with([{"poll_id": 23, "contamination_1": 0, "poll_title": "Alternaria"}])
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor.native_value, 0)
 
     # --- extra_state_attributes ---
 
     def test_extra_state_attributes_returns_poll_title(self):
-        coordinator = self._coordinator_with([{"pollen_id": 23, "contamination_1": 2, "poll_title": "TestTitle"}])
+        coordinator = self._coordinator_with([{"poll_id": 23, "contamination_1": 2, "poll_title": "TestTitle"}])
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor.extra_state_attributes, {"poll_title": "TestTitle"})
 
@@ -136,7 +137,7 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(sensor.extra_state_attributes, {})
 
     def test_extra_state_attributes_returns_empty_dict_when_pollen_id_not_found(self):
-        coordinator = self._coordinator_with([{"pollen_id": 99, "contamination_1": 1, "poll_title": "Other"}])
+        coordinator = self._coordinator_with([{"poll_id": 99, "contamination_1": 1, "poll_title": "Other"}])
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor.extra_state_attributes, {})
 
@@ -181,12 +182,12 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
     # --- state (via monkeypatched property) ---
 
     def test_state_equals_native_value(self):
-        coordinator = self._coordinator_with([{"pollen_id": 23, "contamination_1": 7, "poll_title": "Alternaria"}])
+        coordinator = self._coordinator_with([{"poll_id": 23, "contamination_1": 7, "poll_title": "Alternaria"}])
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor.state, sensor.native_value)
 
     def test_state_is_none_when_no_match(self):
-        coordinator = self._coordinator_with([{"pollen_id": 99, "contamination_1": 3, "poll_title": "Other"}])
+        coordinator = self._coordinator_with([{"poll_id": 99, "contamination_1": 3, "poll_title": "Other"}])
         sensor = self._make_sensor(coordinator)
         self.assertIsNone(sensor.state)
 
