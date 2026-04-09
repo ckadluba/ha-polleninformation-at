@@ -1,5 +1,6 @@
 DOMAIN = "polleninformation_at"
 INTEGRATION_NAME = "Polleninformation.at"
+INTEGRATION_AUTHOR = "Christian Kadluba"
 
 POLLEN_TYPES = {
     "alternaria": {"pollen_id": 23, "name": "Pilzsporen (Alternaria)"},
