@@ -1,7 +1,12 @@
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
+from homeassistant.helpers import config_validation as cv
 from .const import DOMAIN
+
+# Integration can only be set up from config entries
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the Polleninformation.at component."""
