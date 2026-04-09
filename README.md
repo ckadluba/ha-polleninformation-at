@@ -76,3 +76,7 @@ To run all unit and integration tests (recommended):
 ```bash
 pytest
 ```
+
+## Acknowledgements
+
+The icon for the Polleninformation.at integration (`custom_components/polleninformation_at/brand/icon.png`) was created by [Vignesh Oviyan](https://icon-icons.com/authors/497-vignesh-oviyan) using the [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) license.
