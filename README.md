@@ -1,13 +1,24 @@
 # Home Assistant Polleninformation.at Integration
 
-Custom Home Assistant integration for `polleninformation.at`.
+This [HACS](https://www.hacs.xyz) custom integration enables the access of pollen count data from the API of [polleninformation.at](https://www.polleninformation.at) in [Home Assistant](https://www.home-assistant.io).
 
+## Disclaimer
 
+TODO
 
+## Installation
 
+TODO
 
+## Usage
 
-## Development (in the Dev Container)
+TODO
+
+## Features and Restrictions
+
+TODO: Sensors, Poll Cycle
+
+## Development
 
 All development steps and tests are performed inside the Dev Container. This ensures a consistent environment, just like in production.
 
@@ -53,7 +64,7 @@ To run integration tests like `test_async_update_fetches_live_data`:
 
    Example:
    ```env
-POLLENINFORMATION_AT_API_KEY=your-api-key-here # Comment this line to skip test_async_update_fetches_live_data
+   POLLENINFORMATION_AT_API_KEY=your-api-key-here # Comment this line to skip test_async_update_fetches_live_data
    POLLEN_API_TEST_LATITUDE=48.2082
    POLLEN_API_TEST_LONGITUDE=16.3738
    POLLEN_API_TEST_POLLEN_ID=23
@@ -80,3 +91,5 @@ pytest
 ## Acknowledgements
 
 The icon for the Polleninformation.at integration (`custom_components/polleninformation_at/brand/icon.png`) was created by [Vignesh Oviyan](https://icon-icons.com/authors/497-vignesh-oviyan) using the [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) license.
+
+This software was created by [Christian Kadluba](https://github.com/ckadluba).

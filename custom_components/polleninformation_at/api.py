@@ -14,6 +14,11 @@ class PollenApi:
         self._api_key = api_key
         self._raw_response = None
 
+    @property
+    def raw_response(self):
+        """Return the latest raw API response."""
+        return self._raw_response
+
     async def async_update(self):
         """Query data from API and store the raw response."""
         latitude = self.hass.config.latitude
@@ -29,12 +34,13 @@ class PollenApi:
             f"?country=AT&lang=de&latitude={latitude}&longitude={longitude}"
             f"&apikey={self._api_key}"
         )
-        _LOGGER.debug(f"Fetching data from URL: {url}")
+        _LOGGER.debug("Fetching data from URL: %s", url)
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, timeout=10) as response:
                     response.raise_for_status()
                     data = await response.json()
                     self._raw_response = data
-        except aiohttp.ClientError as e:
-            _LOGGER.error(f"Error fetching pollen data: {e}")
+                    return data
+        except aiohttp.ClientError as err:
+            raise RuntimeError("Error fetching pollen data") from err

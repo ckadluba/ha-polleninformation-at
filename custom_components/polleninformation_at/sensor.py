@@ -1,78 +1,87 @@
 
-import logging
-import voluptuous as vol
-from datetime import timedelta
-
-from homeassistant.components.sensor import PLATFORM_SCHEMA
-from homeassistant.const import CONF_NAME
-import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.components.sensor import SensorEntity, SensorStateClass
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from custom_components.polleninformation_at.const import (
+    DOMAIN,
+    ICON_FLOWER_POLLEN,
+    INTEGRATION_AUTHOR,
     INTEGRATION_NAME,
-    CONF_API_KEY,
-    CONF_LOCATION,
-    DEFAULT_INTERVAL,
-    POLLEN_TYPES
+    POLLEN_TYPES,
 )
 
-from custom_components.polleninformation_at.api import PollenApi
-from custom_components.polleninformation_at.sensor_entity import PollenSensor
 
-SCAN_INTERVAL = timedelta(hours=DEFAULT_INTERVAL)
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    vol.Required(CONF_LOCATION): cv.string,
-    vol.Optional(CONF_NAME, default=INTEGRATION_NAME): cv.string
-})
-
-_LOGGER = logging.getLogger(__name__)
-
-
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Set up the Polleninformation.at sensors using DataUpdateCoordinator."""
-    name = config_entry.data.get(CONF_NAME, INTEGRATION_NAME)
-    location = config_entry.data.get(CONF_LOCATION)
-    api_key = config_entry.options.get(CONF_API_KEY, config_entry.data.get(CONF_API_KEY))
-
-    _LOGGER.info(f"🔄 Setup entry started: name={name}, location={location}")
-
-    async def async_update_data():
-        try:
-            api = PollenApi(hass, api_key)
-            await api.async_update()
-            # Store the full API response in the coordinator
-            return getattr(api, '_raw_response', {})
-        except Exception as err:
-            _LOGGER.error(f"Error updating pollen data: {err}")
-            return {}
-
-    coordinator = DataUpdateCoordinator(
-        hass,
-        _LOGGER,
-        name="Polleninformation.at Data",
-        update_method=async_update_data,
-        update_interval=SCAN_INTERVAL,
-    )
-
-    await coordinator.async_config_entry_first_refresh()
-
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up Polleninformation.at sensors for a config entry."""
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]
     sensors = [
         PollenSensor(coordinator, pollen_type, item["pollen_id"], item["name"])
         for pollen_type, item in POLLEN_TYPES.items()
     ]
-    async_add_entities(sensors, update_before_add=True)
+    async_add_entities(sensors)
 
-    _LOGGER.info(f"✅ {len(sensors)} sensor(s) added.")
 
-    config_entry.async_on_unload(
-        config_entry.add_update_listener(async_update_options)
-    )
+class PollenSensor(CoordinatorEntity, SensorEntity):
+    """Polleninformation.at sensor backed by the integration coordinator."""
 
-async def async_update_options(hass, config_entry):
-    """React to config updates"""
-    _LOGGER.info("🔄 Config entry options geändert, Integration wird neu geladen...")
-    await hass.config_entries.async_reload(config_entry.entry_id)
+    def __init__(self, coordinator, pollen_type, pollen_id, pollen_name):
+        """Initialize the sensor entity."""
+        super().__init__(coordinator)
+
+        self._pollen_id = pollen_id
+        self._pollen_type = pollen_type
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, "polleninformation_at")},
+            name=INTEGRATION_NAME,
+            manufacturer=INTEGRATION_AUTHOR,
+            entry_type=DeviceEntryType.SERVICE,
+        )
+        self._attr_has_entity_name = True
+        self._attr_name = pollen_name
+        self._attr_unique_id = f"{DOMAIN}_{pollen_type}"
+        self._attr_icon = ICON_FLOWER_POLLEN
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_native_unit_of_measurement = "level"
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the current contamination level."""
+        data = self._get_contamination_entry()
+        return data.get("contamination_1") if data else None
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return additional sensor attributes."""
+        data = self._get_contamination_entry()
+        if not data:
+            return {}
+
+        return {
+            "poll_title": data.get("poll_title"),
+        }
+
+    def _get_contamination_entry(self):
+        """Extract the contamination entry for this pollen type."""
+        response = self.coordinator.data
+        if not response:
+            return None
+
+        contamination = response.get("contamination")
+        if isinstance(contamination, list):
+            for entry in contamination:
+                if str(entry.get("poll_id")) == str(self._pollen_id):
+                    return entry
+
+        return None
 
 
 

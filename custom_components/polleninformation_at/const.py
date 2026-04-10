@@ -1,6 +1,7 @@
 DOMAIN = "polleninformation_at"
 INTEGRATION_NAME = "Polleninformation.at"
 INTEGRATION_AUTHOR = "Christian Kadluba"
+PLATFORMS = ["sensor"]
 
 POLLEN_TYPES = {
     "alternaria": {"pollen_id": 23, "name": "Pilzsporen (Alternaria)"},
@@ -20,7 +21,6 @@ POLLEN_TYPES = {
 
 DEFAULT_INTERVAL = 12  # hours, fixed polling interval
 
-CONF_LOCATION = "location"
 CONF_API_KEY = "api_key"
 
 ICON_FLOWER_POLLEN = "mdi:flower-pollen"
