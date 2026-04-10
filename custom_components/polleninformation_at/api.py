@@ -1,5 +1,6 @@
 import aiohttp
 import logging
+from aiohttp import ClientTimeout
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ class PollenApi:
         _LOGGER.debug("Fetching data from URL: %s", url)
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(url, timeout=10) as response:
+                async with session.get(url, timeout=ClientTimeout(total=10)) as response:
                     response.raise_for_status()
                     data = await response.json()
                     self._raw_response = data

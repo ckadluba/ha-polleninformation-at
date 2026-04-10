@@ -1,4 +1,6 @@
 
+from functools import cached_property
+
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -29,7 +31,7 @@ async def async_setup_entry(
     async_add_entities(sensors)
 
 
-class PollenSensor(CoordinatorEntity, SensorEntity):
+class PollenSensor(CoordinatorEntity, SensorEntity):  # type: ignore[misc]
     """Polleninformation.at sensor backed by the integration coordinator."""
 
     def __init__(self, coordinator, pollen_type, pollen_id, pollen_name):
@@ -51,14 +53,15 @@ class PollenSensor(CoordinatorEntity, SensorEntity):
         self._attr_icon = ICON_FLOWER_POLLEN
         self._attr_state_class = SensorStateClass.MEASUREMENT
         self._attr_native_unit_of_measurement = "level"
+        self._attr_available = True
 
-    @property
+    @cached_property
     def native_value(self) -> int | None:
         """Return the current contamination level."""
         data = self._get_contamination_entry()
         return data.get("contamination_1") if data else None
 
-    @property
+    @cached_property
     def extra_state_attributes(self) -> dict:
         """Return additional sensor attributes."""
         data = self._get_contamination_entry()

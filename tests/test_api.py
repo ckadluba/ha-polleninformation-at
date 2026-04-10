@@ -10,6 +10,10 @@ class StubAioHttpModule:
     class ClientError(Exception):
         pass
 
+    class ClientTimeout:
+        def __init__(self, total=None):
+            self.total = total
+
     ClientSession = None
 
 

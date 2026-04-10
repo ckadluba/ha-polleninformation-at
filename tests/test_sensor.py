@@ -44,21 +44,21 @@ class MockDeviceInfo:
         pass
 
 
-ha_components_sensor_mock.SensorEntity = MockSensorEntity
-ha_components_sensor_mock.SensorStateClass = MockSensorStateClass
-ha_helpers_cv_mock.config_entry_only_config_schema = lambda domain: None
-ha_helpers_update_coordinator_mock.DataUpdateCoordinator = MockDataUpdateCoordinator
-ha_helpers_update_coordinator_mock.CoordinatorEntity = MockCoordinatorEntity
-ha_helpers_update_coordinator_mock.UpdateFailed = Exception
-ha_helpers_device_registry_mock.DeviceEntryType = type(
+ha_components_sensor_mock.SensorEntity = MockSensorEntity  # type: ignore[attr-defined]
+ha_components_sensor_mock.SensorStateClass = MockSensorStateClass  # type: ignore[attr-defined]
+ha_helpers_cv_mock.config_entry_only_config_schema = lambda domain: None  # type: ignore[attr-defined]
+ha_helpers_update_coordinator_mock.DataUpdateCoordinator = MockDataUpdateCoordinator  # type: ignore[attr-defined]
+ha_helpers_update_coordinator_mock.CoordinatorEntity = MockCoordinatorEntity  # type: ignore[attr-defined]
+ha_helpers_update_coordinator_mock.UpdateFailed = Exception  # type: ignore[attr-defined]
+ha_helpers_device_registry_mock.DeviceEntryType = type(  # type: ignore[attr-defined]
     "DeviceEntryType",
     (),
     {"SERVICE": "service"},
 )
-ha_helpers_device_registry_mock.DeviceInfo = MockDeviceInfo
-ha_helpers_entity_platform_mock.AddEntitiesCallback = object
-ha_config_entries_mock.ConfigEntry = object
-ha_core_mock.HomeAssistant = object
+ha_helpers_device_registry_mock.DeviceInfo = MockDeviceInfo  # type: ignore[attr-defined]
+ha_helpers_entity_platform_mock.AddEntitiesCallback = object  # type: ignore[attr-defined]
+ha_config_entries_mock.ConfigEntry = object  # type: ignore[attr-defined]
+ha_core_mock.HomeAssistant = object  # type: ignore[attr-defined]
 
 sys.modules["homeassistant"] = ha_mock
 sys.modules["homeassistant.components"] = ha_components_mock
@@ -79,6 +79,7 @@ if str(workspace_root) not in sys.path:
 def load_sensor_module(module_name: str):
     sensor_path = workspace_root / "custom_components" / "polleninformation_at" / "sensor.py"
     spec = importlib.util.spec_from_file_location(module_name, sensor_path)
+    assert spec is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     assert spec.loader is not None
