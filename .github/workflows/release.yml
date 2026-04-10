@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: write
+
 jobs:
   release_zip_file:
     name: Prepare release asset
@@ -16,10 +19,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.14
-
-      - name: Get version
-        id: version
-        uses: home-assistant/actions/helpers/version@master          
 
       - name: ZIP polleninformation_at dir
         run: |
