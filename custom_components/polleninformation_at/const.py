@@ -19,7 +19,7 @@ POLLEN_TYPES = {
     "artemisia": {"pollen_id": 7, "name": "Beifuß (Artemisia)"}
 }
 
-DEFAULT_INTERVAL = 12  # hours, fixed polling interval
+DEFAULT_INTERVAL = 6  # hours, fixed polling interval
 
 CONF_API_KEY = "api_key"
 
