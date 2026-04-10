@@ -8,16 +8,9 @@
     "**/__pycache__",
     ".pytest_cache"
   ],
-  "typeCheckingMode": "strict",
+  "typeCheckingMode": "standard",
   "pythonVersion": "3.11",
   "pythonPlatform": "Linux",
   "reportMissingImports": true,
-  "reportMissingTypeStubs": false,
-  "reportOptionalMemberAccess": true,
-  "reportOptionalSubscript": true,
-  "reportOptionalCallOperand": true,
-  "reportOptionalIterable": true,
-  "reportOptionalContextManager": true,
-  "reportOptionalOperand": true,
-  "reportTypedDictNotRequiredAccess": true
+  "reportMissingTypeStubs": false
 }

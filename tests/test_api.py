@@ -1,7 +1,7 @@
 import unittest
 import sys
 from pathlib import Path
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
 import importlib.util
 from unittest.mock import Mock, patch
 
@@ -17,14 +17,21 @@ class StubAioHttpModule:
     ClientSession = None
 
 
+aiohttp_stub = ModuleType("aiohttp")
+setattr(aiohttp_stub, "ClientError", StubAioHttpModule.ClientError)
+setattr(aiohttp_stub, "ClientTimeout", StubAioHttpModule.ClientTimeout)
+setattr(aiohttp_stub, "ClientSession", StubAioHttpModule.ClientSession)
+
+
 API_PATH = (
     Path(__file__).resolve().parents[1]
     / "custom_components"
     / "polleninformation_at"
     / "api.py"
 )
-sys.modules.setdefault("aiohttp", StubAioHttpModule())
+sys.modules.setdefault("aiohttp", aiohttp_stub)
 API_SPEC = importlib.util.spec_from_file_location("polleninformation_at_api", API_PATH)
+assert API_SPEC is not None
 API_MODULE = importlib.util.module_from_spec(API_SPEC)
 sys.modules[API_SPEC.name] = API_MODULE
 assert API_SPEC.loader is not None
