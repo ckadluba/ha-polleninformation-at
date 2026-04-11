@@ -2,8 +2,7 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 permissions:
   contents: write
@@ -59,12 +58,11 @@ jobs:
           cd ${{ github.workspace }}/custom_components/polleninformation_at
           zip polleninformation_at.zip -r ./
 
-      - name: Create draft release
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: v${{ steps.version.outputs.version }}
-          draft: true
           body_path: ${{ steps.changelog.outputs.file }}
 
       - name: Upload zip to release
