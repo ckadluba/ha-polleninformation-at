@@ -33,4 +33,9 @@ jobs:
           tag_name: v${{ steps.version.outputs.version }}
           name: v${{ steps.version.outputs.version }}
           draft: true
+
+      - name: Upload zip to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
           files: ${{ github.workspace }}/custom_components/polleninformation_at/polleninformation_at.zip
