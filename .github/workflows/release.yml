@@ -1,35 +1,36 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
 
 jobs:
   release_zip_file:
-    name: Prepare release asset
+    name: Create draft release
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.14
+      - name: Read version from manifest
+        id: version
+        run: |
+          VERSION=$(jq -r '.version' custom_components/polleninformation_at/manifest.json)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: ZIP polleninformation_at dir
         run: |
           cd ${{ github.workspace }}/custom_components/polleninformation_at
           zip polleninformation_at.zip -r ./
-      - name: Upload zip to release
-        uses: svenstaro/upload-release-action@v1-release
 
+      - name: Create draft release
+        uses: softprops/action-gh-release@v2
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ github.workspace }}/custom_components/polleninformation_at/polleninformation_at.zip
-          asset_name: polleninformation_at.zip
-          tag: ${{ github.ref }}
-          overwrite: true
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          draft: true
+          files: ${{ github.workspace }}/custom_components/polleninformation_at/polleninformation_at.zip
