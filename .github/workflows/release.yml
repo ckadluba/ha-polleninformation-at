@@ -1,35 +1,74 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
 
 jobs:
   release_zip_file:
-    name: Prepare release asset
+    name: Create draft release
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.14
+      - name: Read version from manifest
+        id: version
+        run: |
+          VERSION=$(jq -r '.version' custom_components/polleninformation_at/manifest.json)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Check version is not already released
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="v${{ steps.version.outputs.version }}"
+          # Check for existing tag
+          if git ls-remote --exit-code --tags origin "refs/tags/${VERSION}" > /dev/null 2>&1; then
+            echo "::error::Tag ${VERSION} already exists. Bump the version in manifest.json before releasing."
+            exit 1
+          fi
+          # Check for existing release (including drafts)
+          if gh release view "${VERSION}" > /dev/null 2>&1; then
+            echo "::error::Release ${VERSION} already exists. Bump the version in manifest.json before releasing."
+            exit 1
+          fi
+
+      - name: Generate changelog
+        id: changelog
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Find the tag of the latest published release (ignore drafts)
+          LAST_TAG=$(gh release list --exclude-drafts --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)
+          if [ -n "$LAST_TAG" ]; then
+            COMMITS=$(git log "${LAST_TAG}..HEAD" --pretty=format:"- %s (%h)" --no-merges)
+          else
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          fi
+          # Write to a temp file to preserve newlines
+          echo "$COMMITS" > /tmp/changelog.txt
+          echo "file=/tmp/changelog.txt" >> $GITHUB_OUTPUT
 
       - name: ZIP polleninformation_at dir
         run: |
           cd ${{ github.workspace }}/custom_components/polleninformation_at
           zip polleninformation_at.zip -r ./
-      - name: Upload zip to release
-        uses: svenstaro/upload-release-action@v1-release
 
+      - name: Create draft release
+        uses: softprops/action-gh-release@v2
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ github.workspace }}/custom_components/polleninformation_at/polleninformation_at.zip
-          asset_name: polleninformation_at.zip
-          tag: ${{ github.ref }}
-          overwrite: true
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          draft: true
+          body_path: ${{ steps.changelog.outputs.file }}
+
+      - name: Upload zip to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          files: ${{ github.workspace }}/custom_components/polleninformation_at/polleninformation_at.zip
