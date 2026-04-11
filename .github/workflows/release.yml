@@ -22,6 +22,22 @@ jobs:
           VERSION=$(jq -r '.version' custom_components/polleninformation_at/manifest.json)
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
+      - name: Check version is not already released
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="v${{ steps.version.outputs.version }}"
+          # Check for existing tag
+          if git ls-remote --exit-code --tags origin "refs/tags/${VERSION}" > /dev/null 2>&1; then
+            echo "::error::Tag ${VERSION} already exists. Bump the version in manifest.json before releasing."
+            exit 1
+          fi
+          # Check for existing release (including drafts)
+          if gh release view "${VERSION}" > /dev/null 2>&1; then
+            echo "::error::Release ${VERSION} already exists. Bump the version in manifest.json before releasing."
+            exit 1
+          fi
+
       - name: ZIP polleninformation_at dir
         run: |
           cd ${{ github.workspace }}/custom_components/polleninformation_at
