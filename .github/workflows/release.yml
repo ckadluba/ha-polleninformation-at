@@ -9,11 +9,12 @@ permissions:
 
 jobs:
   release_zip_file:
-    name: Create draft release
+    name: Create release
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history to ensure we can check for existing tags/releases
 
       - name: Read version from manifest
         id: version
@@ -42,6 +43,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Ensure tags are available
+          git fetch --tags --force
+
           # Find the tag of the latest published release (ignore drafts)
           LAST_TAG=$(gh release list --exclude-drafts --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)
           if [ -n "$LAST_TAG" ]; then
