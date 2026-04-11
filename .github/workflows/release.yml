@@ -43,6 +43,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Ensure tags are available
+          git fetch --tags --force
+
           # Find the tag of the latest published release (ignore drafts)
           LAST_TAG=$(gh release list --exclude-drafts --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)
           if [ -n "$LAST_TAG" ]; then
