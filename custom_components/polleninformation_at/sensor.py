@@ -11,7 +11,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from custom_components.polleninformation_at.const import (
     DOMAIN,
     ICON_FLOWER_POLLEN,
-    INTEGRATION_AUTHOR,
+    INTEGRATION_DEVICE_MANUFACTURER,
     INTEGRATION_NAME,
     POLLEN_TYPES,
 )
@@ -44,7 +44,7 @@ class PollenSensor(CoordinatorEntity, SensorEntity):  # type: ignore[misc]
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, "polleninformation_at")},
             name=INTEGRATION_NAME,
-            manufacturer=INTEGRATION_AUTHOR,
+            manufacturer=INTEGRATION_DEVICE_MANUFACTURER,
             entry_type=DeviceEntryType.SERVICE,
         )
         self._attr_has_entity_name = True
