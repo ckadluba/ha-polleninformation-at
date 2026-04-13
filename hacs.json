@@ -2,5 +2,6 @@
     "name": "Polleninformation.at",
     "render_readme": true,
     "homeassistant": "2026.4.0",
-    "country": "AT"
+    "country": "AT",
+    "icon": "mdi:flower-pollen"
 }
