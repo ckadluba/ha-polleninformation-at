@@ -55,13 +55,13 @@ class PollenSensor(CoordinatorEntity, SensorEntity):  # type: ignore[misc]
         self._attr_native_unit_of_measurement = "level"
         self._attr_available = True
 
-    @cached_property
+    @property
     def native_value(self) -> int | None:
         """Return the current contamination level."""
         data = self._get_contamination_entry()
         return data.get("contamination_1") if data else None
 
-    @cached_property
+    @property
     def extra_state_attributes(self) -> dict:
         """Return additional sensor attributes."""
         data = self._get_contamination_entry()
