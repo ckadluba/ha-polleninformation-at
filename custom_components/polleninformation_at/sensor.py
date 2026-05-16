@@ -53,7 +53,6 @@ class PollenSensor(CoordinatorEntity, SensorEntity):  # type: ignore[misc]
         self._attr_icon = ICON_FLOWER_POLLEN
         self._attr_state_class = SensorStateClass.MEASUREMENT
         self._attr_native_unit_of_measurement = "level"
-        self._attr_available = True
 
     @property
     def native_value(self) -> int | None:
