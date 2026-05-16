@@ -30,8 +30,10 @@ async def async_setup_entry(
     ]
     async_add_entities(sensors)
 
-
-class PollenSensor(CoordinatorEntity, SensorEntity):
+# Pyright is too strict here: CoordinatorEntity and SensorEntity have incompatible definitions for member available
+class PollenSensor( # pyright: ignore[reportIncompatibleVariableOverride]
+    CoordinatorEntity, 
+    SensorEntity):
     """Polleninformation.at sensor backed by the integration coordinator."""
 
     def __init__(self, coordinator, pollen_type, pollen_id, pollen_name):
@@ -54,14 +56,16 @@ class PollenSensor(CoordinatorEntity, SensorEntity):
         self._attr_state_class = SensorStateClass.MEASUREMENT
         self._attr_native_unit_of_measurement = "level"
 
-    @property  # pyright: ignore[reportIncompatibleMethodOverride]
-    def native_value(self) -> int | None:
+    # Pyright is too strict here: we cannot use @cached_property because HA would not update the value then
+    @property  # pyright: ignore[reportIncompatibleVariableOverride]
+    def native_value(self) -> int | None: # pyright: ignore[reportIncompatibleVariableOverride]
         """Return the current contamination level."""
         data = self._get_contamination_entry()
         return data.get("contamination_1") if data else None
 
-    @property  # pyright: ignore[reportIncompatibleMethodOverride]
-    def extra_state_attributes(self) -> dict:
+    # Pyright is too strict here: we cannot use @cached_property because HA would not update the value then
+    @property  # pyright: ignore[reportIncompatibleVariableOverride]
+    def extra_state_attributes(self) -> dict: # pyright: ignore[reportIncompatibleVariableOverride]
         """Return additional sensor attributes."""
         data = self._get_contamination_entry()
         if not data:
