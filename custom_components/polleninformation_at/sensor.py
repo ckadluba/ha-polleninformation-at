@@ -31,7 +31,7 @@ async def async_setup_entry(
     async_add_entities(sensors)
 
 
-class PollenSensor(CoordinatorEntity, SensorEntity):  # type: ignore[misc]
+class PollenSensor(CoordinatorEntity, SensorEntity):
     """Polleninformation.at sensor backed by the integration coordinator."""
 
     def __init__(self, coordinator, pollen_type, pollen_id, pollen_name):
