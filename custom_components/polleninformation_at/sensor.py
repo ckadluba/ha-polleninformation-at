@@ -11,7 +11,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from custom_components.polleninformation_at.const import (
     DOMAIN,
     ICON_FLOWER_POLLEN,
-    INTEGRATION_AUTHOR,
+    INTEGRATION_DEVICE_MANUFACTURER,
     INTEGRATION_NAME,
     POLLEN_TYPES,
 )
@@ -30,8 +30,10 @@ async def async_setup_entry(
     ]
     async_add_entities(sensors)
 
-
-class PollenSensor(CoordinatorEntity, SensorEntity):  # type: ignore[misc]
+# Pyright is too strict here: CoordinatorEntity and SensorEntity have incompatible definitions for member available
+class PollenSensor( # pyright: ignore[reportIncompatibleVariableOverride]
+    CoordinatorEntity, 
+    SensorEntity):
     """Polleninformation.at sensor backed by the integration coordinator."""
 
     def __init__(self, coordinator, pollen_type, pollen_id, pollen_name):
@@ -44,7 +46,7 @@ class PollenSensor(CoordinatorEntity, SensorEntity):  # type: ignore[misc]
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, "polleninformation_at")},
             name=INTEGRATION_NAME,
-            manufacturer=INTEGRATION_AUTHOR,
+            manufacturer=INTEGRATION_DEVICE_MANUFACTURER,
             entry_type=DeviceEntryType.SERVICE,
         )
         self._attr_has_entity_name = True
@@ -53,16 +55,17 @@ class PollenSensor(CoordinatorEntity, SensorEntity):  # type: ignore[misc]
         self._attr_icon = ICON_FLOWER_POLLEN
         self._attr_state_class = SensorStateClass.MEASUREMENT
         self._attr_native_unit_of_measurement = "level"
-        self._attr_available = True
 
-    @cached_property
-    def native_value(self) -> int | None:
+    # Pyright is too strict here: we cannot use @cached_property because HA would not update the value then
+    @property  # pyright: ignore[reportIncompatibleVariableOverride]
+    def native_value(self) -> int | None: # pyright: ignore[reportIncompatibleVariableOverride]
         """Return the current contamination level."""
         data = self._get_contamination_entry()
         return data.get("contamination_1") if data else None
 
-    @cached_property
-    def extra_state_attributes(self) -> dict:
+    # Pyright is too strict here: we cannot use @cached_property because HA would not update the value then
+    @property  # pyright: ignore[reportIncompatibleVariableOverride]
+    def extra_state_attributes(self) -> dict: # pyright: ignore[reportIncompatibleVariableOverride]
         """Return additional sensor attributes."""
         data = self._get_contamination_entry()
         if not data:

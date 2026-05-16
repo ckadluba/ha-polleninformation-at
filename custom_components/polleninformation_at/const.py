@@ -1,6 +1,6 @@
 DOMAIN = "polleninformation_at"
 INTEGRATION_NAME = "Polleninformation.at"
-INTEGRATION_AUTHOR = "Christian Kadluba"
+INTEGRATION_DEVICE_MANUFACTURER = "Christian Kadluba (data provided by www.polleninformation.at)"
 PLATFORMS = ["sensor"]
 
 POLLEN_TYPES = {
