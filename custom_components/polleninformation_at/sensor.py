@@ -54,13 +54,13 @@ class PollenSensor(CoordinatorEntity, SensorEntity):
         self._attr_state_class = SensorStateClass.MEASUREMENT
         self._attr_native_unit_of_measurement = "level"
 
-    @property
+    @property  # pyright: ignore[reportIncompatibleMethodOverride]
     def native_value(self) -> int | None:
         """Return the current contamination level."""
         data = self._get_contamination_entry()
         return data.get("contamination_1") if data else None
 
-    @property
+    @property  # pyright: ignore[reportIncompatibleMethodOverride]
     def extra_state_attributes(self) -> dict:
         """Return additional sensor attributes."""
         data = self._get_contamination_entry()
