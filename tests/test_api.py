@@ -1,8 +1,8 @@
-import unittest
+import importlib.util
 import sys
+import unittest
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
-import importlib.util
 from unittest.mock import Mock, patch
 
 
@@ -18,9 +18,9 @@ class StubAioHttpModule:
 
 
 aiohttp_stub = ModuleType("aiohttp")
-setattr(aiohttp_stub, "ClientError", StubAioHttpModule.ClientError)
-setattr(aiohttp_stub, "ClientTimeout", StubAioHttpModule.ClientTimeout)
-setattr(aiohttp_stub, "ClientSession", StubAioHttpModule.ClientSession)
+aiohttp_stub.ClientError = StubAioHttpModule.ClientError
+aiohttp_stub.ClientTimeout = StubAioHttpModule.ClientTimeout
+aiohttp_stub.ClientSession = StubAioHttpModule.ClientSession
 
 
 API_PATH = (
@@ -71,7 +71,9 @@ class FakeClientSession:
 class TestPollenApi(unittest.IsolatedAsyncioTestCase):
     async def test_async_update_sets_state_and_poll_title(self):
         # Arrange
-        hass = SimpleNamespace(config=SimpleNamespace(latitude=48.2082, longitude=16.3738))
+        hass = SimpleNamespace(
+            config=SimpleNamespace(latitude=48.2082, longitude=16.3738)
+        )
         api_key = "test-api-key"
         payload = {
             "contamination": [
@@ -108,7 +110,9 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
         session = FakeClientSession(response)
 
         # Act
-        with patch("polleninformation_at_api.aiohttp.ClientSession", return_value=session):
+        with patch(
+            "polleninformation_at_api.aiohttp.ClientSession", return_value=session
+        ):
             api = PollenApi(hass, api_key)
             await api.async_update()
 
@@ -127,7 +131,9 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
         session = FakeClientSession(response)
 
         # Act
-        with patch("polleninformation_at_api.aiohttp.ClientSession", return_value=session):
+        with patch(
+            "polleninformation_at_api.aiohttp.ClientSession", return_value=session
+        ):
             api = PollenApi(hass, api_key)
             await api.async_update()
 

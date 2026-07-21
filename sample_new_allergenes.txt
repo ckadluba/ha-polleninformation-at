@@ -1,0 +1,265 @@
+poll_id 356 "Ampfer (Rumex)", 326 "Edelkastanie (Castanea)", 320 "Wegerichgewächse (Plantago)", 1107 "Götterbaum (Ailanthus altissima)", 355 "Linde (Tilia)"
+ 
+
+// full payload:
+
+{
+  "contamination": [
+    {
+      "poll_id": 5,
+      "poll_title": "Gräser (Poaceae)",
+      "contamination_1": 3,
+      "contamination_2": 3,
+      "contamination_3": 2,
+      "contamination_4": 2
+    },
+    {
+      "poll_id": 15,
+      "poll_title": "Nessel- und Glaskraut (Urticaceae)",
+      "contamination_1": 2,
+      "contamination_2": 2,
+      "contamination_3": 2,
+      "contamination_4": 2
+    },
+    {
+      "poll_id": 23,
+      "poll_title": "Pilzsporen (Alternaria)",
+      "contamination_1": 2,
+      "contamination_2": 2,
+      "contamination_3": 2,
+      "contamination_4": 2
+    },
+    {
+      "poll_id": 356,
+      "poll_title": "Ampfer (Rumex)",
+      "contamination_1": 1,
+      "contamination_2": 1,
+      "contamination_3": 1,
+      "contamination_4": 1
+    },
+    {
+      "poll_id": 326,
+      "poll_title": "Edelkastanie (Castanea)",
+      "contamination_1": 1,
+      "contamination_2": 1,
+      "contamination_3": 1,
+      "contamination_4": 1
+    },
+    {
+      "poll_id": 320,
+      "poll_title": "Wegerichgewächse (Plantago)",
+      "contamination_1": 1,
+      "contamination_2": 1,
+      "contamination_3": 1,
+      "contamination_4": 1
+    },
+    {
+      "poll_id": 7,
+      "poll_title": "Beifuß (Artemisia)",
+      "contamination_1": 0,
+      "contamination_2": 0,
+      "contamination_3": 0,
+      "contamination_4": 0
+    },
+    {
+      "poll_id": 2,
+      "poll_title": "Birke (Betula)",
+      "contamination_1": 0,
+      "contamination_2": 0,
+      "contamination_3": 0,
+      "contamination_4": 0
+    },
+    {
+      "poll_id": 1,
+      "poll_title": "Erle (Alnus)",
+      "contamination_1": 0,
+      "contamination_2": 0,
+      "contamination_3": 0,
+      "contamination_4": 0
+    },
+    {
+      "poll_id": 4,
+      "poll_title": "Esche (Fraxinus)",
+      "contamination_1": 0,
+      "contamination_2": 0,
+      "contamination_3": 0,
+      "contamination_4": 0
+    },
+    {
+      "poll_id": 1107,
+      "poll_title": "Götterbaum (Ailanthus altissima)",
+      "contamination_1": 0,
+      "contamination_2": 0,
+      "contamination_3": 0,
+      "contamination_4": 0
+    },
+    {
+      "poll_id": 3,
+      "poll_title": "Hasel (Corylus)",
+      "contamination_1": 0,
+      "contamination_2": 0,
+      "contamination_3": 0,
+      "contamination_4": 0
+    },
+    {
+      "poll_id": 355,
+      "poll_title": "Linde (Tilia)",
+      "contamination_1": 0,
+      "contamination_2": 0,
+      "contamination_3": 0,
+      "contamination_4": 0
+    },
+    {
+      "poll_id": 18,
+      "poll_title": "Ölbaum (Olea)",
+      "contamination_1": 0,
+      "contamination_2": 0,
+      "contamination_3": 0,
+      "contamination_4": 0
+    },
+    {
+      "poll_id": 16,
+      "poll_title": "Platane (Platanus)",
+      "contamination_1": 0,
+      "contamination_2": 0,
+      "contamination_3": 0,
+      "contamination_4": 0
+    },
+    {
+      "poll_id": 6,
+      "poll_title": "Ragweed (Ambrosia)",
+      "contamination_1": 0,
+      "contamination_2": 0,
+      "contamination_3": 0,
+      "contamination_4": 0
+    },
+    {
+      "poll_id": 291,
+      "poll_title": "Roggen (Secale)",
+      "contamination_1": 0,
+      "contamination_2": 0,
+      "contamination_3": 0,
+      "contamination_4": 0
+    },
+    {
+      "poll_id": 17,
+      "poll_title": "Zypressengewächse (Cupressaceae)",
+      "contamination_1": 0,
+      "contamination_2": 0,
+      "contamination_3": 0,
+      "contamination_4": 0
+    }
+  ],
+  "allergyrisk": {
+    "allergyrisk_1": 8,
+    "allergyrisk_2": 8,
+    "allergyrisk_3": 5,
+    "allergyrisk_4": 5
+  },
+  "allergyrisk_hourly": {
+    "allergyrisk_hourly_1": [
+      8,
+      8,
+      8,
+      8,
+      7,
+      8,
+      8,
+      8,
+      7,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      7,
+      8,
+      8,
+      8,
+      8,
+      8
+    ],
+    "allergyrisk_hourly_2": [
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      7,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      7,
+      7,
+      7,
+      7,
+      8,
+      8,
+      8,
+      8,
+      8
+    ],
+    "allergyrisk_hourly_3": [
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      4,
+      3,
+      4,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      4,
+      4,
+      4,
+      5,
+      5
+    ],
+    "allergyrisk_hourly_4": [
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      4,
+      4,
+      4,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      4,
+      4,
+      4
+    ]
+  }
+}

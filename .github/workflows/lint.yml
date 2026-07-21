@@ -1,4 +1,4 @@
-name: Test
+name: Lint
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
 permissions: {}
 
 jobs:
-  test:
+  ruff:
     runs-on: "ubuntu-latest"
     steps:
       - name: Checkout the repository
@@ -23,13 +23,15 @@ jobs:
           cache: "pip"
           cache-dependency-path: |
             requirements_common.txt
-            requirements_dev.txt
+            requirements_lint.txt
 
       - name: Install requirements
         run: |
           python3 -m pip install -r requirements_common.txt
-          python3 -m pip install -r requirements_dev.txt
+          python3 -m pip install -r requirements_lint.txt
 
-      - name: Run tests
-        run: |
-          python3 -m pytest tests -v
+      - name: Lint
+        run: python3 -m ruff check .
+
+      - name: Format
+        run: python3 -m ruff format . --check

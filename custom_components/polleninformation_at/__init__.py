@@ -1,4 +1,3 @@
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
@@ -9,10 +8,12 @@ from .coordinator import PollenDataUpdateCoordinator
 # Integration can only be set up from config entries
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
+
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the Polleninformation.at component."""
     hass.data.setdefault(DOMAIN, {})
     return True
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up Polleninformation.at from a config entry."""
@@ -25,6 +26,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     return True
+
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""

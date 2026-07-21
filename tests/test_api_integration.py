@@ -1,11 +1,12 @@
-import importlib.util
 import importlib
-from dotenv import load_dotenv
+import importlib.util
 import os
 import sys
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+
+from dotenv import load_dotenv
 
 # Ensure aiohttp is not mocked or None from previous tests
 if "aiohttp" in sys.modules:
@@ -49,7 +50,9 @@ class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
 
         latitude = float(os.getenv("POLLEN_API_TEST_LATITUDE", "48.2082"))
         longitude = float(os.getenv("POLLEN_API_TEST_LONGITUDE", "16.3738"))
-        hass = SimpleNamespace(config=SimpleNamespace(latitude=latitude, longitude=longitude))
+        hass = SimpleNamespace(
+            config=SimpleNamespace(latitude=latitude, longitude=longitude)
+        )
         api = pollen_api_class(hass, api_key)
 
         # Act
@@ -61,14 +64,22 @@ class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
 
         # Additional asserts for each pollen_id in POLLEN_TYPES
         from custom_components.polleninformation_at.const import POLLEN_TYPES
+
         contamination = api._raw_response.get("contamination", {})
-        contamination_dict = {str(item["poll_id"]): item for item in contamination if "poll_id" in item}
+        contamination_dict = {
+            str(item["poll_id"]): item for item in contamination if "poll_id" in item
+        }
 
         for pollen_key, pollen_info in POLLEN_TYPES.items():
             pollen_id = pollen_info["pollen_id"]
             with self.subTest(pollen_id=pollen_id, pollen_key=pollen_key):
-                self.assertIn(str(pollen_id), contamination_dict, f"Poll ID {pollen_id} ({pollen_key}) missing in contamination data")
-        
+                self.assertIn(
+                    str(pollen_id),
+                    contamination_dict,
+                    f"Poll ID {pollen_id} ({pollen_key}) missing in contamination data",
+                )
+
+
 if __name__ == "__main__":
     load_dotenv()
     unittest.main()
