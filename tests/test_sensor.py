@@ -5,15 +5,20 @@ import types
 import unittest
 from unittest.mock import AsyncMock, MagicMock
 
-
 ha_mock = types.ModuleType("homeassistant")
 ha_components_mock = types.ModuleType("homeassistant.components")
 ha_components_sensor_mock = types.ModuleType("homeassistant.components.sensor")
 ha_helpers_mock = types.ModuleType("homeassistant.helpers")
 ha_helpers_cv_mock = types.ModuleType("homeassistant.helpers.config_validation")
-ha_helpers_update_coordinator_mock = types.ModuleType("homeassistant.helpers.update_coordinator")
-ha_helpers_device_registry_mock = types.ModuleType("homeassistant.helpers.device_registry")
-ha_helpers_entity_platform_mock = types.ModuleType("homeassistant.helpers.entity_platform")
+ha_helpers_update_coordinator_mock = types.ModuleType(
+    "homeassistant.helpers.update_coordinator"
+)
+ha_helpers_device_registry_mock = types.ModuleType(
+    "homeassistant.helpers.device_registry"
+)
+ha_helpers_entity_platform_mock = types.ModuleType(
+    "homeassistant.helpers.entity_platform"
+)
 ha_config_entries_mock = types.ModuleType("homeassistant.config_entries")
 ha_core_mock = types.ModuleType("homeassistant.core")
 
@@ -65,7 +70,9 @@ sys.modules["homeassistant.components"] = ha_components_mock
 sys.modules["homeassistant.components.sensor"] = ha_components_sensor_mock
 sys.modules["homeassistant.helpers"] = ha_helpers_mock
 sys.modules["homeassistant.helpers.config_validation"] = ha_helpers_cv_mock
-sys.modules["homeassistant.helpers.update_coordinator"] = ha_helpers_update_coordinator_mock
+sys.modules["homeassistant.helpers.update_coordinator"] = (
+    ha_helpers_update_coordinator_mock
+)
 sys.modules["homeassistant.helpers.device_registry"] = ha_helpers_device_registry_mock
 sys.modules["homeassistant.helpers.entity_platform"] = ha_helpers_entity_platform_mock
 sys.modules["homeassistant.config_entries"] = ha_config_entries_mock
@@ -77,7 +84,9 @@ if str(workspace_root) not in sys.path:
 
 
 def load_sensor_module(module_name: str):
-    sensor_path = workspace_root / "custom_components" / "polleninformation_at" / "sensor.py"
+    sensor_path = (
+        workspace_root / "custom_components" / "polleninformation_at" / "sensor.py"
+    )
     spec = importlib.util.spec_from_file_location(module_name, sensor_path)
     assert spec is not None
     module = importlib.util.module_from_spec(spec)
@@ -145,7 +154,9 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(sensor.native_value)
 
     def test_native_value_returns_none_when_contamination_missing(self):
-        coordinator = self._coordinator_with([{"poll_id": 23, "poll_title": "Alternaria"}])
+        coordinator = self._coordinator_with(
+            [{"poll_id": 23, "poll_title": "Alternaria"}]
+        )
         sensor = self._make_sensor(coordinator)
         self.assertIsNone(sensor.native_value)
 

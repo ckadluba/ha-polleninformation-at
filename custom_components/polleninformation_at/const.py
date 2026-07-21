@@ -1,6 +1,8 @@
 DOMAIN = "polleninformation_at"
 INTEGRATION_NAME = "Polleninformation.at"
-INTEGRATION_DEVICE_MANUFACTURER = "Christian Kadluba (data provided by www.polleninformation.at)"
+INTEGRATION_DEVICE_MANUFACTURER = (
+    "Christian Kadluba (data provided by www.polleninformation.at)"
+)
 PLATFORMS = ["sensor"]
 
 POLLEN_TYPES = {
@@ -16,7 +18,7 @@ POLLEN_TYPES = {
     "secale": {"pollen_id": 291, "name": "Roggen (Secale)"},
     "urticaceae": {"pollen_id": 15, "name": "Nessel- und Glaskraut (Urticaceae)"},
     "olea": {"pollen_id": 18, "name": "Ölbaum (Olea)"},
-    "artemisia": {"pollen_id": 7, "name": "Beifuß (Artemisia)"}
+    "artemisia": {"pollen_id": 7, "name": "Beifuß (Artemisia)"},
 }
 
 DEFAULT_INTERVAL = 6  # hours, fixed polling interval

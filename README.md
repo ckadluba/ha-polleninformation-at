@@ -13,7 +13,7 @@ The authors and contributors accept **NO RESPONSIBILITY** for:
 - API rate limits, failures
 - Unexpected behavior or incorrect results
 
-**Important**: Always create backups of your Home Assistant system when using this integration. 
+**Important**: Always create backups of your Home Assistant system when using this integration.
 
 ## Installation and Configuration
 
@@ -37,7 +37,7 @@ The authors and contributors accept **NO RESPONSIBILITY** for:
 * The location for which the pollen count is queried is taken from the configured location of the Home Assistant system. There is no possibility to specify a different location.
 
 * A device named "Polleninformation.at" is created when installing the integration. Under this device, there will be a numerical sensor for each of the 13 pollen types covered by the www.polleninformation.at API.
-   
+
   ![alt text](images/device_and_services.png)
 
   These sensors are numerical sensors representing the current pollen count returned by the API on a scale from 0 to 4.
@@ -48,45 +48,27 @@ The authors and contributors accept **NO RESPONSIBILITY** for:
 
 All development steps and tests are performed inside the Dev Container. This ensures a consistent environment, just like in production.
 
-### Starting VS Code in the Dev Container
-
-1. Open a WSL terminal (e.g., Ubuntu on Windows).
-2. Change to your project directory:
-	```bash
-	cd /path/to/ha-polleninformation-at
-	```
-3. Start VS Code in WSL:
-	```bash
-	code .
-	```
-4. If prompted, reopen the project in the Dev Container ("Reopen in Container").
-5. Wait until the Dev Container is fully started.
-6. In VS Code, select the Python interpreter inside the container (e.g., /usr/local/bin/python3) if not already selected.
-
 ### Starting Home Assistant with the Integration in the Dev Container
 
-Once VS Code is running in the Dev Container, perform the following steps to start Home Assistant with the integration.
+The Dev Container configuration is based on the official [HACS blueprint integration](https://github.com/ludeeus/integration_blueprint), so the debug procedure and scripts are similar.
 
-1. In the Run & Debug panel, select the configuration **Home Assistant: Debug current integration**.
-2. Start the debugger (F5 or green play button).
+1. In VS Code select `Dev Container: Rebuild and Reopen in Container`.
 
-Home Assistant will start in debug mode with your integration. Breakpoints in `custom_components/polleninformation_at` will be hit directly.
+1. Create a new Python venv (e.g. using the VS Code Python extension).
 
-After starting the debugger (F5), open [http://localhost:8123](http://localhost:8123) in your browser. On first start, create a Home Assistant user and add the "Polleninformation.at" integration via the UI.
+1. Open a bash terminal session. The venv will automatically be activated. In the direcory `custom_components/polleninformation_at` run scripts/develop. All dependencies will be installed and Home Assistant is started.
 
-The Home Assistant test configuration is located at `.devcontainer/config/configuration.yaml`. The start script automatically links your integration, so code changes are picked up immediately.
+1. Open the Home Assistant web UI in a browser (eg. http://localhost:8123, check the ports window in VS Code) and do the initial configuration.
+
+1. Add and configure the Polleninformation.at integration under Settings - Devices & services.
 
 ### Running integration tests
 
 To run integration tests like `test_async_update_fetches_live_data`:
 
-1. Copy the file `.env.example` to `.env` in the project root:
+1. Copy the file `.env.example` to `.env` in the project root.
 
-   ```bash
-   cp .env.example .env
-   ```
-
-2. Edit the `.env` file and enter your real API key and (optionally) adjust the test parameters.
+1. Edit the `.env` file and enter your real API key and (optionally) adjust the test parameters.
 
    Example:
    ```env
@@ -96,23 +78,20 @@ To run integration tests like `test_async_update_fetches_live_data`:
    POLLEN_API_TEST_POLLEN_ID=23
    ```
 
-3. Run the test in a terminal inside the Dev Container:
+   Note that you must have the setting `python.terminal.useEnvFile` set to true.
+
+1. Open the project in a Dev Container.
+
+1. Run the test using the test extension or using the command line.
 
    ```bash
-   python -m unittest tests.test_api_integration
+   python -m unittest tests.test_api_integration -v
    ```
 
-The test will only run and perform a live API call if the variable `POLLENINFORMATION_AT_API_KEY` is 
-set in your `.env` file. Be careful not to run the live API test too frequently. Your API key might get 
+The test will only run and perform a live API call if the variable `POLLENINFORMATION_AT_API_KEY` is
+set in your `.env` file. Be careful not to run the live API test too frequently. Your API key might get
 rate limited or even revoked if you use the API excessively.
 
-### Running isolated unit tests
-
-To run all unit and integration tests (recommended):
-
-```bash
-pytest
-```
 
 ## Acknowledgements and License
 

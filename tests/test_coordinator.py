@@ -1,5 +1,5 @@
-import importlib.util
 import importlib
+import importlib.util
 import pathlib
 import sys
 import types
@@ -9,7 +9,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 ha_mock = types.ModuleType("homeassistant")
 ha_helpers_mock = types.ModuleType("homeassistant.helpers")
 ha_helpers_cv_mock = types.ModuleType("homeassistant.helpers.config_validation")
-ha_helpers_update_coordinator_mock = types.ModuleType("homeassistant.helpers.update_coordinator")
+ha_helpers_update_coordinator_mock = types.ModuleType(
+    "homeassistant.helpers.update_coordinator"
+)
 ha_config_entries_mock = types.ModuleType("homeassistant.config_entries")
 ha_core_mock = types.ModuleType("homeassistant.core")
 
@@ -26,16 +28,18 @@ class MockUpdateFailed(Exception):
     pass
 
 
-setattr(ha_helpers_cv_mock, "config_entry_only_config_schema", lambda domain: None)
-setattr(ha_helpers_update_coordinator_mock, "DataUpdateCoordinator", MockDataUpdateCoordinator)
-setattr(ha_helpers_update_coordinator_mock, "UpdateFailed", MockUpdateFailed)
-setattr(ha_config_entries_mock, "ConfigEntry", object)
-setattr(ha_core_mock, "HomeAssistant", object)
+ha_helpers_cv_mock.config_entry_only_config_schema = lambda domain: None
+ha_helpers_update_coordinator_mock.DataUpdateCoordinator = MockDataUpdateCoordinator
+ha_helpers_update_coordinator_mock.UpdateFailed = MockUpdateFailed
+ha_config_entries_mock.ConfigEntry = object
+ha_core_mock.HomeAssistant = object
 
 sys.modules["homeassistant"] = ha_mock
 sys.modules["homeassistant.helpers"] = ha_helpers_mock
 sys.modules["homeassistant.helpers.config_validation"] = ha_helpers_cv_mock
-sys.modules["homeassistant.helpers.update_coordinator"] = ha_helpers_update_coordinator_mock
+sys.modules["homeassistant.helpers.update_coordinator"] = (
+    ha_helpers_update_coordinator_mock
+)
 sys.modules["homeassistant.config_entries"] = ha_config_entries_mock
 sys.modules["homeassistant.core"] = ha_core_mock
 
@@ -65,7 +69,9 @@ class TestPollenDataUpdateCoordinator(unittest.IsolatedAsyncioTestCase):
         entry = self._entry(data_api_key="data-key", options_api_key="options-key")
         coordinator = PollenDataUpdateCoordinator(hass, entry)
 
-        with patch("custom_components.polleninformation_at.coordinator.PollenApi") as mock_api_cls:
+        with patch(
+            "custom_components.polleninformation_at.coordinator.PollenApi"
+        ) as mock_api_cls:
             api_instance = mock_api_cls.return_value
             api_instance.async_update = AsyncMock()
             api_instance.raw_response = {"contamination": []}
@@ -80,7 +86,9 @@ class TestPollenDataUpdateCoordinator(unittest.IsolatedAsyncioTestCase):
         entry = self._entry()
         coordinator = PollenDataUpdateCoordinator(hass, entry)
 
-        with patch("custom_components.polleninformation_at.coordinator.PollenApi") as mock_api_cls:
+        with patch(
+            "custom_components.polleninformation_at.coordinator.PollenApi"
+        ) as mock_api_cls:
             api_instance = mock_api_cls.return_value
             api_instance.async_update = AsyncMock()
             api_instance.raw_response = {"contamination": [{"poll_id": 23}]}
@@ -94,7 +102,9 @@ class TestPollenDataUpdateCoordinator(unittest.IsolatedAsyncioTestCase):
         entry = self._entry()
         coordinator = PollenDataUpdateCoordinator(hass, entry)
 
-        with patch("custom_components.polleninformation_at.coordinator.PollenApi") as mock_api_cls:
+        with patch(
+            "custom_components.polleninformation_at.coordinator.PollenApi"
+        ) as mock_api_cls:
             api_instance = mock_api_cls.return_value
             api_instance.async_update = AsyncMock(side_effect=RuntimeError("boom"))
             api_instance.raw_response = None
