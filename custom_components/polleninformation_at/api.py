@@ -30,19 +30,32 @@ class PollenApi:
         if not self._api_key:
             raise ValueError("API key is not configured.")
 
-        url = (
+        endpoint = (
             "https://www.polleninformation.at/api/forecast/public"
-            f"?country=AT&lang=de&latitude={latitude}&longitude={longitude}"
-            f"&apikey={self._api_key}"
+            "?country=AT&lang=de&latitude={latitude}&longitude={longitude}"
+            "&apikey={apikey}"
         )
-        _LOGGER.debug("Fetching data from URL: %s", url)
+        url = endpoint.format(
+            latitude=latitude,
+            longitude=longitude,
+            apikey=self._api_key,
+        )
+        redacted_url = endpoint.format(
+            latitude="<REDACTED>",
+            longitude="<REDACTED>",
+            apikey="<REDACTED>",
+        )
+        _LOGGER.debug("Fetching data from URL: %s", redacted_url)
         try:
-            async with aiohttp.ClientSession() as session, session.get(
-                url, timeout=ClientTimeout(total=10)
-            ) as response:
+            async with (
+                aiohttp.ClientSession() as session,
+                session.get(url, timeout=ClientTimeout(total=10)) as response,
+            ):
                 response.raise_for_status()
                 data = await response.json()
                 self._raw_response = data
                 return data
         except aiohttp.ClientError as err:
-            raise RuntimeError("Error fetching pollen data") from err
+            error_msg = f"Error fetching data from URL: {redacted_url}"
+            _LOGGER.exception(error_msg)
+            raise RuntimeError(error_msg) from err
