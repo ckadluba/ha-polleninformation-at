@@ -56,6 +56,11 @@ class FakeResponse:
         return self._payload
 
 
+class FakeErrorResponse(FakeResponse):
+    def raise_for_status(self):
+        raise API_MODULE.aiohttp.ClientError("Boom")
+
+
 class FakeClientSession:
     def __init__(self, response):
         self._response = response
@@ -141,3 +146,69 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
         session.get.assert_called_once()
         url = session.get.call_args.args[0]
         assert f"apikey={api_key}" in url
+
+    async def test_async_update_does_not_log_api_key(self):
+        # Arrange
+        hass = SimpleNamespace(config=SimpleNamespace(latitude=48.2082, longitude=16.3738))
+        api_key = "secret-api-key"
+        payload = {"contamination": []}
+        response = FakeResponse(payload)
+        session = FakeClientSession(response)
+
+        # Act
+        with patch(
+            "polleninformation_at_api.aiohttp.ClientSession", return_value=session
+        ), self.assertLogs(API_MODULE.__name__, level="DEBUG") as logs:
+            api = PollenApi(hass, api_key)
+            await api.async_update()
+
+        # Assert
+        log_text = "\n".join(logs.output)
+        self.assertNotIn(api_key, log_text)
+        self.assertIn("<REDACTED>", log_text)
+
+    async def test_async_update_uses_actual_url_parameters(self):
+        # Arrange
+        latitude = 47.0
+        longitude = 15.0
+        api_key = "my-special-key"
+        hass = SimpleNamespace(config=SimpleNamespace(latitude=latitude, longitude=longitude))
+        payload = {"contamination": []}
+        response = FakeResponse(payload)
+        session = FakeClientSession(response)
+
+        # Act
+        with patch(
+            "polleninformation_at_api.aiohttp.ClientSession", return_value=session
+        ):
+            api = PollenApi(hass, api_key)
+            await api.async_update()
+
+        # Assert
+        session.get.assert_called_once()
+        url = session.get.call_args.args[0]
+        self.assertIn(f"latitude={latitude}", url)
+        self.assertIn(f"longitude={longitude}", url)
+        self.assertIn(f"apikey={api_key}", url)
+
+    async def test_async_update_logs_error_with_redacted_url_and_cause(self):
+        # Arrange
+        hass = SimpleNamespace(config=SimpleNamespace(latitude=48.2082, longitude=16.3738))
+        api_key = "secret-api-key"
+        payload = {"contamination": []}
+        response = FakeErrorResponse(payload)
+        session = FakeClientSession(response)
+
+        # Act / Assert
+        with patch(
+            "polleninformation_at_api.aiohttp.ClientSession", return_value=session
+        ), self.assertLogs(API_MODULE.__name__, level="ERROR") as logs:
+            api = PollenApi(hass, api_key)
+            with self.assertRaises(RuntimeError) as exc_info:
+                await api.async_update()
+
+        self.assertEqual(len(logs.records), 1)
+        self.assertIsNotNone(logs.records[0].exc_info)
+        self.assertIn("<REDACTED>", logs.output[0])
+        self.assertNotIn(api_key, logs.output[0])
+        self.assertIsInstance(exc_info.exception.__cause__, API_MODULE.aiohttp.ClientError)
