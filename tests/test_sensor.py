@@ -34,6 +34,12 @@ class MockSensorEntity:
         return native_value() if callable(native_value) else native_value
 
 
+class MockSensorEntityDescription:
+    def __init__(self, *args, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
 class MockCoordinatorEntity:
     def __init__(self, coordinator, *args, **kwargs):
         self.coordinator = coordinator
@@ -50,6 +56,9 @@ class MockDeviceInfo:
 
 
 ha_components_sensor_mock.SensorEntity = MockSensorEntity  # type: ignore[attr-defined]
+ha_components_sensor_mock.SensorEntityDescription = (  # type: ignore[attr-defined]
+    MockSensorEntityDescription
+)
 ha_components_sensor_mock.SensorStateClass = MockSensorStateClass  # type: ignore[attr-defined]
 ha_helpers_cv_mock.config_entry_only_config_schema = lambda domain: None  # type: ignore[attr-defined]
 ha_helpers_update_coordinator_mock.DataUpdateCoordinator = MockDataUpdateCoordinator  # type: ignore[attr-defined]
@@ -199,6 +208,16 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
         sensor = self._make_sensor(coordinator, pollen_type="secale")
         self.assertEqual(sensor._attr_unique_id, "polleninformation_at_secale")
 
+    def test_entity_id_follows_stable_integration_pattern(self):
+        coordinator = MagicMock()
+        coordinator.data = {}
+        sensor = self._make_sensor(
+            coordinator,
+            pollen_type="betula",
+            pollen_name="Birke (Betula)",
+        )
+        self.assertEqual(sensor.entity_id, "sensor.polleninformation_at_betula")
+
     def test_rumex_sensor_attributes(self):
         coordinator = MagicMock()
         coordinator.data = {}
@@ -245,7 +264,9 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
             pollen_name="Götterbaum (Ailanthus altissima)",
         )
         self.assertEqual(sensor._attr_name, "Götterbaum (Ailanthus altissima)")
-        self.assertEqual(sensor._attr_unique_id, "polleninformation_at_ailanthus_altissima")
+        self.assertEqual(
+            sensor._attr_unique_id, "polleninformation_at_ailanthus_altissima"
+        )
 
     def test_tilia_sensor_attributes(self):
         coordinator = MagicMock()

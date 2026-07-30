@@ -1,0 +1,60 @@
+{
+    "entity": {
+        "sensor": {
+            "polleninformation_at_poaceae": {
+                "name": "Gräser (Poaceae)"
+            },
+            "polleninformation_at_urticaceae": {
+                "name": "Nessel- und Glaskraut (Urticaceae)"
+            },
+            "polleninformation_at_alternaria": {
+                "name": "Pilzsporen (Alternaria)"
+            },
+            "polleninformation_at_rumex": {
+                "name": "Ampfer (Rumex)"
+            },
+            "polleninformation_at_castanea": {
+                "name": "Edelkastanie (Castanea)"
+            },
+            "polleninformation_at_plantago": {
+                "name": "Wegerichgewächse (Plantago)"
+            },
+            "polleninformation_at_artemisia": {
+                "name": "Beifuß (Artemisia)"
+            },
+            "polleninformation_at_betula": {
+                "name": "Birke (Betula)"
+            },
+            "polleninformation_at_alnus": {
+                "name": "Erle (Alnus)"
+            },
+            "polleninformation_at_fraxinus": {
+                "name": "Esche (Fraxinus)"
+            },
+            "polleninformation_at_ailanthus_altissima": {
+                "name": "Götterbaum (Ailanthus altissima)"
+            },
+            "polleninformation_at_corylus": {
+                "name": "Hasel (Corylus)"
+            },
+            "polleninformation_at_tilia": {
+                "name": "Linde (Tilia)"
+            },
+            "polleninformation_at_olea": {
+                "name": "Ölbaum (Olea)"
+            },
+            "polleninformation_at_platanus": {
+                "name": "Platane (Platanus)"
+            },
+            "polleninformation_at_ambrosia": {
+                "name": "Ragweed (Ambrosia)"
+            },
+            "polleninformation_at_secale": {
+                "name": "Roggen (Secale)"
+            },
+            "polleninformation_at_cupressaceae": {
+                "name": "Zypressengewächse (Cupressaceae)"
+            }
+        }
+    }
+}
