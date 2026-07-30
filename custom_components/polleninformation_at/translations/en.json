@@ -1,0 +1,60 @@
+{
+    "entity": {
+        "sensor": {
+            "polleninformation_at_poaceae": {
+                "name": "Grasses (Poaceae)"
+            },
+            "polleninformation_at_urticaceae": {
+                "name": "Nettle and pellitory (Urticaceae)"
+            },
+            "polleninformation_at_alternaria": {
+                "name": "Fungal spores (Alternaria)"
+            },
+            "polleninformation_at_rumex": {
+                "name": "Dock (Rumex)"
+            },
+            "polleninformation_at_castanea": {
+                "name": "Sweet chestnut (Castanea)"
+            },
+            "polleninformation_at_plantago": {
+                "name": "Plantain (Plantago)"
+            },
+            "polleninformation_at_artemisia": {
+                "name": "Mugwort (Artemisia)"
+            },
+            "polleninformation_at_betula": {
+                "name": "Birch (Betula)"
+            },
+            "polleninformation_at_alnus": {
+                "name": "Alder (Alnus)"
+            },
+            "polleninformation_at_fraxinus": {
+                "name": "Ash (Fraxinus)"
+            },
+            "polleninformation_at_ailanthus_altissima": {
+                "name": "Tree of heaven (Ailanthus altissima)"
+            },
+            "polleninformation_at_corylus": {
+                "name": "Hazel (Corylus)"
+            },
+            "polleninformation_at_tilia": {
+                "name": "Linden (Tilia)"
+            },
+            "polleninformation_at_olea": {
+                "name": "Olive tree (Olea)"
+            },
+            "polleninformation_at_platanus": {
+                "name": "Plane tree (Platanus)"
+            },
+            "polleninformation_at_ambrosia": {
+                "name": "Ragweed (Ambrosia)"
+            },
+            "polleninformation_at_secale": {
+                "name": "Rye (Secale)"
+            },
+            "polleninformation_at_cupressaceae": {
+                "name": "Cypress family (Cupressaceae)"
+            }
+        }
+    }
+}

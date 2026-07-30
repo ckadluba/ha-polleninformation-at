@@ -1,4 +1,10 @@
-from homeassistant.components.sensor import SensorEntity, SensorStateClass
+import logging
+
+from homeassistant.components.sensor import (
+    SensorEntity,
+    SensorEntityDescription,
+    SensorStateClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
@@ -13,6 +19,8 @@ from custom_components.polleninformation_at.const import (
     POLLEN_TYPES,
 )
 
+_LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -22,21 +30,49 @@ async def async_setup_entry(
     """Set up Polleninformation.at sensors for a config entry."""
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
     sensors = [
-        PollenSensor(coordinator, pollen_type, item["pollen_id"], item["name"])
+        PollenSensor(coordinator, pollen_type, item["pollen_id"])
         for pollen_type, item in POLLEN_TYPES.items()
     ]
+
+    _LOGGER.debug(f"Setting up PollenSensor entities: {sensors}")
+
     async_add_entities(sensors)
 
 
 class PollenSensor(CoordinatorEntity, SensorEntity):
-    """Polleninformation.at sensor backed by the integration coordinator."""
+    """
+    Polleninformation.at sensor backed by the integration coordinator.
 
-    def __init__(self, coordinator, pollen_type, pollen_id, pollen_name):
+    param coordinator: The data update coordinator for this integration.
+    param pollen_type: The type of pollen (e.g., "poaceae", "betula").
+    param pollen_id: The numeric ID for the pollen type according to the API response.
+    """
+
+    def __init__(self, coordinator, pollen_type, pollen_id, pollen_name=None):
         """Initialize the sensor entity."""
         super().__init__(coordinator)
 
         self._pollen_id = pollen_id
         self._pollen_type = pollen_type
+
+        canonical_entity_name = f"{DOMAIN}_{pollen_type}"
+        self._attr_name = pollen_name
+        self._attr_has_entity_name = True
+        self._attr_unique_id = canonical_entity_name
+        self._attr_icon = ICON_FLOWER_POLLEN
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_native_unit_of_measurement = "level"
+
+        # Ensure canonical entity_id independent of friendly name
+        self.entity_id = f"sensor.{canonical_entity_name}"
+
+        self.entity_description = SensorEntityDescription(
+            key=canonical_entity_name,
+            translation_key=canonical_entity_name,
+            icon=ICON_FLOWER_POLLEN,
+            native_unit_of_measurement="level",
+            state_class=SensorStateClass.MEASUREMENT,
+        )
 
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, "polleninformation_at")},
@@ -44,12 +80,13 @@ class PollenSensor(CoordinatorEntity, SensorEntity):
             manufacturer=INTEGRATION_DEVICE_MANUFACTURER,
             entry_type=DeviceEntryType.SERVICE,
         )
-        self._attr_has_entity_name = True
-        self._attr_name = pollen_name
-        self._attr_unique_id = f"{DOMAIN}_{pollen_type}"
-        self._attr_icon = ICON_FLOWER_POLLEN
-        self._attr_state_class = SensorStateClass.MEASUREMENT
-        self._attr_native_unit_of_measurement = "level"
+
+        _LOGGER.debug(
+            "PollenSensor initialized with _attr_unique_id: %s, _pollen_id: %s, _pollen_type: %s",
+            self._attr_unique_id,
+            self._pollen_id,
+            self._pollen_type,
+        )
 
     @property
     def native_value(self) -> int | None:
