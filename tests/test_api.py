@@ -1,3 +1,10 @@
+"""
+Tests for the polleninformation_at API module.
+
+These tests exercise the PollenApi integration's HTTP handling and
+logging behavior.
+"""
+
 import importlib.util
 import sys
 import unittest
@@ -7,20 +14,34 @@ from unittest.mock import Mock, patch
 
 
 class StubAioHttpModule:
-    class ClientError(Exception):
+    """
+    A simple aiohttp stub used for testing.
+
+    This stub provides the minimal classes and attributes required by the
+    tested module without importing the real aiohttp package.
+    """
+
+    class ClientError(Exception):  # noqa: D106
         pass
 
-    class ClientTimeout:
-        def __init__(self, total=None):
+    class ClientTimeout:  # noqa: D106
+        def __init__(self, total: float | None = None) -> None:
+            """
+            Initialize a ClientTimeout stub with an optional total timeout.
+
+            Args:
+                total: Total timeout value in seconds or None.
+
+            """
             self.total = total
 
     ClientSession = None
 
 
 aiohttp_stub = ModuleType("aiohttp")
-aiohttp_stub.ClientError = StubAioHttpModule.ClientError
-aiohttp_stub.ClientTimeout = StubAioHttpModule.ClientTimeout
-aiohttp_stub.ClientSession = StubAioHttpModule.ClientSession
+aiohttp_stub.ClientError = StubAioHttpModule.ClientError  # type: ignore[attr-defined]
+aiohttp_stub.ClientTimeout = StubAioHttpModule.ClientTimeout  # type: ignore[attr-defined]
+aiohttp_stub.ClientSession = StubAioHttpModule.ClientSession  # type: ignore[attr-defined]
 
 
 API_PATH = (
@@ -149,16 +170,21 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
 
     async def test_async_update_does_not_log_api_key(self):
         # Arrange
-        hass = SimpleNamespace(config=SimpleNamespace(latitude=48.2082, longitude=16.3738))
+        hass = SimpleNamespace(
+            config=SimpleNamespace(latitude=48.2082, longitude=16.3738)
+        )
         api_key = "secret-api-key"
         payload = {"contamination": []}
         response = FakeResponse(payload)
         session = FakeClientSession(response)
 
         # Act
-        with patch(
-            "polleninformation_at_api.aiohttp.ClientSession", return_value=session
-        ), self.assertLogs(API_MODULE.__name__, level="DEBUG") as logs:
+        with (
+            patch(
+                "polleninformation_at_api.aiohttp.ClientSession", return_value=session
+            ),
+            self.assertLogs(API_MODULE.__name__, level="DEBUG") as logs,
+        ):
             api = PollenApi(hass, api_key)
             await api.async_update()
 
@@ -172,7 +198,9 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
         latitude = 47.0
         longitude = 15.0
         api_key = "my-special-key"
-        hass = SimpleNamespace(config=SimpleNamespace(latitude=latitude, longitude=longitude))
+        hass = SimpleNamespace(
+            config=SimpleNamespace(latitude=latitude, longitude=longitude)
+        )
         payload = {"contamination": []}
         response = FakeResponse(payload)
         session = FakeClientSession(response)
@@ -193,16 +221,21 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
 
     async def test_async_update_logs_error_with_redacted_url_and_cause(self):
         # Arrange
-        hass = SimpleNamespace(config=SimpleNamespace(latitude=48.2082, longitude=16.3738))
+        hass = SimpleNamespace(
+            config=SimpleNamespace(latitude=48.2082, longitude=16.3738)
+        )
         api_key = "secret-api-key"
         payload = {"contamination": []}
         response = FakeErrorResponse(payload)
         session = FakeClientSession(response)
 
         # Act / Assert
-        with patch(
-            "polleninformation_at_api.aiohttp.ClientSession", return_value=session
-        ), self.assertLogs(API_MODULE.__name__, level="ERROR") as logs:
+        with (
+            patch(
+                "polleninformation_at_api.aiohttp.ClientSession", return_value=session
+            ),
+            self.assertLogs(API_MODULE.__name__, level="ERROR") as logs,
+        ):
             api = PollenApi(hass, api_key)
             with self.assertRaises(RuntimeError) as exc_info:
                 await api.async_update()
@@ -211,4 +244,6 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
         self.assertIsNotNone(logs.records[0].exc_info)
         self.assertIn("<REDACTED>", logs.output[0])
         self.assertNotIn(api_key, logs.output[0])
-        self.assertIsInstance(exc_info.exception.__cause__, API_MODULE.aiohttp.ClientError)
+        self.assertIsInstance(
+            exc_info.exception.__cause__, API_MODULE.aiohttp.ClientError
+        )

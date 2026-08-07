@@ -1,3 +1,5 @@
+"""Unit tests for the polleninformation_at sensor integration."""
+
 import importlib.util
 import pathlib
 import sys
@@ -24,35 +26,46 @@ ha_core_mock = types.ModuleType("homeassistant.core")
 
 
 class MockSensorStateClass:
+    """Mock sensor state class constants."""
+
     MEASUREMENT = "measurement"
 
 
 class MockSensorEntity:
+    """Mock sensor entity class."""
+
     @property
-    def state(self):
+    def state(self) -> object:
+        """Return the current state of the sensor entity."""
         native_value = getattr(self, "native_value", None)
         return native_value() if callable(native_value) else native_value
 
 
 class MockSensorEntityDescription:
-    def __init__(self, *args, **kwargs):
+    """Mock sensor entity description class."""
+
+    def __init__(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003, ARG002
+        """Initialize the mock sensor entity description."""
         for key, value in kwargs.items():
             setattr(self, key, value)
 
 
 class MockCoordinatorEntity:
-    def __init__(self, coordinator, *args, **kwargs):
+    """Mock coordinator entity class."""
+
+    def __init__(self, coordinator: object, *_args: object, **_kwargs: object) -> None:
+        """Initialize the mock coordinator entity."""
         self.coordinator = coordinator
 
 
-class MockDataUpdateCoordinator:
-    def __init__(self, *args, **kwargs):
-        pass
+class MockDataUpdateCoordinator:  # noqa: D101
+    def __init__(self, *_args: object, **_kwargs: object) -> None:
+        """Initialize the mock data update coordinator."""
 
 
-class MockDeviceInfo:
-    def __init__(self, *args, **kwargs):
-        pass
+class MockDeviceInfo:  # noqa: D101
+    def __init__(self, *_args: object, **_kwargs: object) -> None:
+        """Initialize the mock device info."""
 
 
 ha_components_sensor_mock.SensorEntity = MockSensorEntity  # type: ignore[attr-defined]
@@ -60,7 +73,7 @@ ha_components_sensor_mock.SensorEntityDescription = (  # type: ignore[attr-defin
     MockSensorEntityDescription
 )
 ha_components_sensor_mock.SensorStateClass = MockSensorStateClass  # type: ignore[attr-defined]
-ha_helpers_cv_mock.config_entry_only_config_schema = lambda domain: None  # type: ignore[attr-defined]
+ha_helpers_cv_mock.config_entry_only_config_schema = lambda domain: None  # type: ignore[attr-defined]  # noqa: ARG005
 ha_helpers_update_coordinator_mock.DataUpdateCoordinator = MockDataUpdateCoordinator  # type: ignore[attr-defined]
 ha_helpers_update_coordinator_mock.CoordinatorEntity = MockCoordinatorEntity  # type: ignore[attr-defined]
 ha_helpers_update_coordinator_mock.UpdateFailed = Exception  # type: ignore[attr-defined]
@@ -92,45 +105,47 @@ if str(workspace_root) not in sys.path:
     sys.path.insert(0, str(workspace_root))
 
 
-def load_sensor_module(module_name: str):
+def load_sensor_module(module_name: str):  # noqa: ANN201, D103
     sensor_path = (
         workspace_root / "custom_components" / "polleninformation_at" / "sensor.py"
     )
     spec = importlib.util.spec_from_file_location(module_name, sensor_path)
-    assert spec is not None
+    assert spec is not None  # noqa: S101
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
-    assert spec.loader is not None
+    assert spec.loader is not None  # noqa: S101
     spec.loader.exec_module(module)
     return module
 
 
 class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
+    """Tests for the pollen sensor logic."""
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:  # noqa: D102
         cls.sensor_module = load_sensor_module("polleninformation_at_sensor")
         cls.PollenSensor = cls.sensor_module.PollenSensor
 
-        async def async_update(self):
+        async def async_update(self) -> None:  # noqa: ANN001
             await self.coordinator.async_request_refresh()
 
         cls.PollenSensor.async_update = async_update
 
-    def _make_sensor(
+    def _make_sensor(  # noqa: ANN202
         self,
-        coordinator,
-        pollen_type="alternaria",
-        pollen_id=23,
-        pollen_name="Pilzsporen (Alternaria)",
+        coordinator: object,
+        pollen_type: str = "alternaria",
+        pollen_id: int = 23,
+        pollen_name: str = "Pilzsporen (Alternaria)",
     ):
         return self.PollenSensor(coordinator, pollen_type, pollen_id, pollen_name)
 
-    def _coordinator_with(self, entries):
+    def _coordinator_with(self, entries) -> MagicMock:  # noqa: ANN001
         coordinator = MagicMock()
         coordinator.data = {"contamination": entries}
         return coordinator
 
-    async def test_async_update_requests_refresh_from_coordinator(self):
+    async def test_async_update_requests_refresh_from_coordinator(self) -> None:  # noqa: D102
         coordinator = self._coordinator_with(
             [{"poll_id": 23, "contamination_1": 1, "poll_title": "TestTitle"}]
         )
@@ -140,9 +155,9 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
         await sensor.async_update()
 
         coordinator.async_request_refresh.assert_awaited_once()
-        self.assertEqual(sensor.state, 1)
+        self.assertEqual(sensor.state, 1)  # noqa: PT009
 
-    def test_native_value_returns_contamination_level(self):
+    def test_native_value_returns_contamination_level(self) -> None:
         coordinator = self._coordinator_with(
             [{"poll_id": 23, "contamination_1": 5, "poll_title": "Alternaria"}]
         )

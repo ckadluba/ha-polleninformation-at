@@ -1,14 +1,19 @@
+"""
+Sensors for the Polleninformation.at Home Assistant integration.
+
+This module defines the PollenSensor entity which exposes pollen
+contamination levels from the integration's coordinator data.
+"""
+
 import logging
+from typing import TYPE_CHECKING
 
 from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from custom_components.polleninformation_at.const import (
@@ -18,6 +23,11 @@ from custom_components.polleninformation_at.const import (
     INTEGRATION_NAME,
     POLLEN_TYPES,
 )
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,7 +44,7 @@ async def async_setup_entry(
         for pollen_type, item in POLLEN_TYPES.items()
     ]
 
-    _LOGGER.debug(f"Setting up PollenSensor entities: {sensors}")
+    _LOGGER.debug("Setting up PollenSensor entities: %s", sensors)
 
     async_add_entities(sensors)
 
@@ -48,7 +58,7 @@ class PollenSensor(CoordinatorEntity, SensorEntity):
     param pollen_id: The numeric ID for the pollen type according to the API response.
     """
 
-    def __init__(self, coordinator, pollen_type, pollen_id, pollen_name=None):
+    def __init__(self, coordinator, pollen_type, pollen_id, pollen_name=None) -> None:  # noqa: ANN001
         """Initialize the sensor entity."""
         super().__init__(coordinator)
 
@@ -82,7 +92,10 @@ class PollenSensor(CoordinatorEntity, SensorEntity):
         )
 
         _LOGGER.debug(
-            "PollenSensor initialized with _attr_unique_id: %s, _pollen_id: %s, _pollen_type: %s",
+            (
+                "PollenSensor initialized with _attr_unique_id: %s, "
+                "_pollen_id: %s, _pollen_type: %s"
+            ),
             self._attr_unique_id,
             self._pollen_id,
             self._pollen_type,
@@ -105,7 +118,7 @@ class PollenSensor(CoordinatorEntity, SensorEntity):
             "poll_title": data.get("poll_title"),
         }
 
-    def _get_contamination_entry(self):
+    def _get_contamination_entry(self) -> dict | None:
         """Extract the contamination entry for this pollen type."""
         response = self.coordinator.data
         if not response:

@@ -1,12 +1,17 @@
+"""Coordinator for the Polleninformation.at integration."""
+
 import logging
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import PollenApi
 from .const import CONF_API_KEY, DEFAULT_INTERVAL, DOMAIN
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,6 +40,7 @@ class PollenDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             await api.async_update()
         except Exception as err:
-            raise UpdateFailed(f"Error fetching pollen data: {err}") from err
+            msg = f"Error fetching pollen data: {err}"
+            raise UpdateFailed(msg) from err
 
         return api.raw_response or {}

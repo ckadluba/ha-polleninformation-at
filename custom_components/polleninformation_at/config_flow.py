@@ -1,3 +1,5 @@
+"""Config flow for the Polleninformation AT integration."""
+
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
@@ -17,10 +19,13 @@ class PolleninformationAtConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):
+    def async_get_options_flow(
+        _config_entry: config_entries.ConfigEntry,
+    ) -> PolleninformationAtOptionsFlowHandler:
+        """Return the options flow handler for this config entry."""
         return PolleninformationAtOptionsFlowHandler()
 
-    async def async_step_user(self, user_input=None):
+    async def async_step_user(self, user_input: dict[str, str] | None = None):  # noqa: ANN201
         """Handle the initial step."""
         if user_input is not None:
             return self.async_create_entry(title=INTEGRATION_NAME, data=user_input)
@@ -33,11 +38,11 @@ class PolleninformationAtConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 class PolleninformationAtOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options flow."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize options flow."""
         self._conf_app_id: str | None = None
 
-    async def async_step_init(self, user_input=None):
+    async def async_step_init(self, user_input: dict[str, str] | None = None):  # noqa: ANN201
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(title=INTEGRATION_NAME, data=user_input)
