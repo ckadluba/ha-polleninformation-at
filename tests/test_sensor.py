@@ -5,7 +5,11 @@ import pathlib
 import sys
 import types
 import unittest
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock
+
+if TYPE_CHECKING:
+    from custom_components.polleninformation_at.sensor import PollenSensor
 
 ha_mock = types.ModuleType("homeassistant")
 ha_components_mock = types.ModuleType("homeassistant.components")
@@ -131,14 +135,13 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
 
         cls.PollenSensor.async_update = async_update
 
-    def _make_sensor(  # noqa: ANN202
+    def _make_sensor(
         self,
         coordinator: object,
         pollen_type: str = "alternaria",
         pollen_id: int = 23,
-        pollen_name: str = "Pilzsporen (Alternaria)",
-    ):
-        return self.PollenSensor(coordinator, pollen_type, pollen_id, pollen_name)
+    ) -> PollenSensor:
+        return self.PollenSensor(coordinator, pollen_type, pollen_id)
 
     def _coordinator_with(self, entries) -> MagicMock:  # noqa: ANN001
         coordinator = MagicMock()
@@ -211,12 +214,6 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor.extra_state_attributes, {})
 
-    def test_attr_name(self):
-        coordinator = MagicMock()
-        coordinator.data = {}
-        sensor = self._make_sensor(coordinator, pollen_name="Roggen (Secale)")
-        self.assertEqual(sensor._attr_name, "Roggen (Secale)")
-
     def test_attr_unique_id(self):
         coordinator = MagicMock()
         coordinator.data = {}
@@ -226,23 +223,13 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
     def test_entity_id_follows_stable_integration_pattern(self):
         coordinator = MagicMock()
         coordinator.data = {}
-        sensor = self._make_sensor(
-            coordinator,
-            pollen_type="betula",
-            pollen_name="Birke (Betula)",
-        )
+        sensor = self._make_sensor(coordinator, pollen_type="betula")
         self.assertEqual(sensor.entity_id, "sensor.polleninformation_at_betula")
 
     def test_rumex_sensor_attributes(self):
         coordinator = MagicMock()
         coordinator.data = {}
-        sensor = self._make_sensor(
-            coordinator,
-            pollen_type="rumex",
-            pollen_id=356,
-            pollen_name="Ampfer (Rumex)",
-        )
-        self.assertEqual(sensor._attr_name, "Ampfer (Rumex)")
+        sensor = self._make_sensor(coordinator, pollen_type="rumex", pollen_id=356)
         self.assertEqual(sensor._attr_unique_id, "polleninformation_at_rumex")
 
     def test_castanea_sensor_attributes(self):
@@ -252,9 +239,7 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
             coordinator,
             pollen_type="castanea",
             pollen_id=326,
-            pollen_name="Edelkastanie (Castanea)",
         )
-        self.assertEqual(sensor._attr_name, "Edelkastanie (Castanea)")
         self.assertEqual(sensor._attr_unique_id, "polleninformation_at_castanea")
 
     def test_plantago_sensor_attributes(self):
@@ -264,21 +249,15 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
             coordinator,
             pollen_type="plantago",
             pollen_id=320,
-            pollen_name="Wegerichgewächse (Plantago)",
         )
-        self.assertEqual(sensor._attr_name, "Wegerichgewächse (Plantago)")
         self.assertEqual(sensor._attr_unique_id, "polleninformation_at_plantago")
 
     def test_ailanthus_altissima_sensor_attributes(self):
         coordinator = MagicMock()
         coordinator.data = {}
         sensor = self._make_sensor(
-            coordinator,
-            pollen_type="ailanthus_altissima",
-            pollen_id=1107,
-            pollen_name="Götterbaum (Ailanthus altissima)",
+            coordinator, pollen_type="ailanthus_altissima", pollen_id=1107
         )
-        self.assertEqual(sensor._attr_name, "Götterbaum (Ailanthus altissima)")
         self.assertEqual(
             sensor._attr_unique_id, "polleninformation_at_ailanthus_altissima"
         )
@@ -286,13 +265,7 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
     def test_tilia_sensor_attributes(self):
         coordinator = MagicMock()
         coordinator.data = {}
-        sensor = self._make_sensor(
-            coordinator,
-            pollen_type="tilia",
-            pollen_id=355,
-            pollen_name="Linde (Tilia)",
-        )
-        self.assertEqual(sensor._attr_name, "Linde (Tilia)")
+        sensor = self._make_sensor(coordinator, pollen_type="tilia", pollen_id=355)
         self.assertEqual(sensor._attr_unique_id, "polleninformation_at_tilia")
 
     def test_attr_icon(self):

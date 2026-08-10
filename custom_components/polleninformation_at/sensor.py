@@ -58,7 +58,7 @@ class PollenSensor(CoordinatorEntity, SensorEntity):
     param pollen_id: The numeric ID for the pollen type according to the API response.
     """
 
-    def __init__(self, coordinator, pollen_type, pollen_id, pollen_name=None) -> None:  # noqa: ANN001
+    def __init__(self, coordinator, pollen_type, pollen_id) -> None:  # noqa: ANN001
         """Initialize the sensor entity."""
         super().__init__(coordinator)
 
@@ -66,7 +66,6 @@ class PollenSensor(CoordinatorEntity, SensorEntity):
         self._pollen_type = pollen_type
 
         canonical_entity_name = f"{DOMAIN}_{pollen_type}"
-        self._attr_name = pollen_name
         self._attr_has_entity_name = True
         self._attr_unique_id = canonical_entity_name
         self._attr_icon = ICON_FLOWER_POLLEN
