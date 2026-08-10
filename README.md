@@ -48,9 +48,33 @@ The authors and contributors accept **NO RESPONSIBILITY** for:
 
 All development steps and tests are performed inside the Dev Container. This ensures a consistent environment, just like in production.
 
+### Create Environment File
+
+Only if you set this project up initially.
+
+1. Create an `.env` file. This defines environment variables used by the api integration tests,
+so the API can be called with realistic input values. You can use the existing `.env.example``
+as a blueprint.
+
+1. Edit the `.env` file and enter your real API key and (optionally) adjust the test parameters.
+
+   Example:
+   ```env
+   POLLENINFORMATION_AT_API_KEY=your-api-key-here # Comment this line to skip test_async_update_fetches_live_data
+   POLLEN_API_TEST_LATITUDE=48.2082
+   POLLEN_API_TEST_LONGITUDE=16.3738
+   POLLEN_API_TEST_POLLEN_ID=23
+   ```
+
+   Note that you must have the setting `python.terminal.useEnvFile` set to true.
+
+
 ### Starting Home Assistant with the Integration in the Dev Container
 
 The Dev Container configuration is based on the official [HACS blueprint integration](https://github.com/ludeeus/integration_blueprint), so the debug procedure and scripts are similar.
+
+
+1. Ensure that you have [created an .env file](#create-environment-file).
 
 1. In VS Code select `Dev Container: Rebuild and Reopen in Container`.
 
@@ -66,19 +90,7 @@ The Dev Container configuration is based on the official [HACS blueprint integra
 
 To run integration tests like `test_async_update_fetches_live_data`:
 
-1. Copy the file `.env.example` to `.env` in the project root.
-
-1. Edit the `.env` file and enter your real API key and (optionally) adjust the test parameters.
-
-   Example:
-   ```env
-   POLLENINFORMATION_AT_API_KEY=your-api-key-here # Comment this line to skip test_async_update_fetches_live_data
-   POLLEN_API_TEST_LATITUDE=48.2082
-   POLLEN_API_TEST_LONGITUDE=16.3738
-   POLLEN_API_TEST_POLLEN_ID=23
-   ```
-
-   Note that you must have the setting `python.terminal.useEnvFile` set to true.
+1. Ensure that you have [created an .env file](#create-environment-file).
 
 1. Open the project in a Dev Container.
 

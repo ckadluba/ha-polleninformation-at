@@ -1,3 +1,5 @@
+"""Constants for the Polleninformation.at integration."""
+
 DOMAIN = "polleninformation_at"
 INTEGRATION_NAME = "Polleninformation.at"
 INTEGRATION_DEVICE_MANUFACTURER = (

@@ -1,7 +1,13 @@
+"""API client for Polleninformation.at."""
+
 import logging
+from typing import TYPE_CHECKING
 
 import aiohttp
 from aiohttp import ClientTimeout
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -9,26 +15,28 @@ _LOGGER = logging.getLogger(__name__)
 class PollenApi:
     """Class to handle API access for Polleninformation.at."""
 
-    def __init__(self, hass, api_key):
+    def __init__(self, hass: HomeAssistant, api_key: str) -> None:
         """Initialize the API handler."""
         self.hass = hass
         self._api_key = api_key
         self._raw_response = None
 
     @property
-    def raw_response(self):
+    def raw_response(self):  # noqa: ANN201
         """Return the latest raw API response."""
         return self._raw_response
 
-    async def async_update(self):
+    async def async_update(self):  # noqa: ANN201
         """Query data from API and store the raw response."""
         latitude = self.hass.config.latitude
         longitude = self.hass.config.longitude
 
         if latitude is None or longitude is None:
-            raise ValueError("Home location is not configured.")
+            msg = "Home location is not configured."
+            raise ValueError(msg)
         if not self._api_key:
-            raise ValueError("API key is not configured.")
+            msg = "API key is not configured."
+            raise ValueError(msg)
 
         endpoint = (
             "https://www.polleninformation.at/api/forecast/public"
