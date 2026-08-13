@@ -54,6 +54,9 @@
             },
             "polleninformation_at_cupressaceae": {
                 "name": "Cypress family (Cupressaceae)"
+            },
+            "polleninformation_at_allergyrisk": {
+                "name": "Allergy Risk"
             }
         }
     }

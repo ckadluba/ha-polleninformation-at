@@ -38,7 +38,7 @@ def load_pollen_api_class():
 
 
 class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
-    async def test_async_update_fetches_live_data(self):
+    async def test_async_update_fetches_live_data(self) -> None:
         # Arrange
         api_key = os.getenv("POLLENINFORMATION_AT_API_KEY")
         if not api_key:
@@ -78,6 +78,10 @@ class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
                     contamination_dict,
                     f"Poll ID {pollen_id} ({pollen_key}) missing in contamination data",
                 )
+
+        # Additional asserts for allergyrisk
+        allergyrisk = api._raw_response.get("allergyrisk", {})
+        self.assertIn("allergyrisk_1", allergyrisk)
 
 
 if __name__ == "__main__":
