@@ -17,10 +17,13 @@ jobs:
         with:
           fetch-depth: 0 # Fetch all history to ensure we can check for existing tags/releases
 
-      - name: Read version from manifest
+      - name: Generate the version number
         id: version
         run: |
           VERSION=$(jq -r '.version' custom_components/polleninformation_at/manifest.json)
+          if [ "${GITHUB_REF_NAME}" = "dev" ]; then
+            VERSION="${VERSION}-dev${GITHUB_RUN_NUMBER}"
+          fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Check version is not already released
@@ -64,13 +67,16 @@ jobs:
           zip polleninformation_at.zip -r ./
 
       - name: Create release
+        if: github.ref_name == 'dev' || github.ref_name == 'main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: v${{ steps.version.outputs.version }}
           body_path: ${{ steps.changelog.outputs.file }}
+          prerelease: ${{ github.ref_name == 'dev' }}
 
       - name: Upload zip to release
+        if: github.ref_name == 'dev' || github.ref_name == 'main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}

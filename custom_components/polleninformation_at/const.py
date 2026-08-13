@@ -27,6 +27,10 @@ POLLEN_TYPES = {
     "secale": {"pollen_id": 291},
     "cupressaceae": {"pollen_id": 17},
 }
+POLLEN_SERIES_NAME = "contamination"
+
+ALLERGYRISK_TYPE = "allergyrisk"
+ALLERGYRISK_SERIES_NAME = "allergyrisk"
 
 DEFAULT_INTERVAL = 6  # hours, fixed polling interval
 
