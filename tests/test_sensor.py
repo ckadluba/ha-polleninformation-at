@@ -109,7 +109,7 @@ if str(workspace_root) not in sys.path:
     sys.path.insert(0, str(workspace_root))
 
 
-def load_sensor_module(module_name: str):  # noqa: ANN201, D103
+def load_sensor_module(module_name: str) -> types.ModuleType:  # noqa: ANN201, D103
     sensor_path = (
         workspace_root / "custom_components" / "polleninformation_at" / "sensor.py"
     )
@@ -167,72 +167,74 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor.native_value, 5)
 
-    def test_native_value_returns_none_when_no_data(self):
+    def test_native_value_returns_none_when_no_data(self) -> None:
         coordinator = MagicMock()
         coordinator.data = None
         sensor = self._make_sensor(coordinator)
         self.assertIsNone(sensor.native_value)
 
-    def test_native_value_returns_none_when_pollen_id_not_found(self):
+    def test_native_value_returns_none_when_pollen_id_not_found(self) -> None:
         coordinator = self._coordinator_with(
             [{"poll_id": 99, "contamination_1": 3, "poll_title": "Other"}]
         )
         sensor = self._make_sensor(coordinator)
         self.assertIsNone(sensor.native_value)
 
-    def test_native_value_returns_none_when_contamination_missing(self):
+    def test_native_value_returns_none_when_contamination_missing(self) -> None:
         coordinator = self._coordinator_with(
             [{"poll_id": 23, "poll_title": "Alternaria"}]
         )
         sensor = self._make_sensor(coordinator)
         self.assertIsNone(sensor.native_value)
 
-    def test_native_value_returns_zero(self):
+    def test_native_value_returns_zero(self) -> None:
         coordinator = self._coordinator_with(
             [{"poll_id": 23, "contamination_1": 0, "poll_title": "Alternaria"}]
         )
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor.native_value, 0)
 
-    def test_extra_state_attributes_returns_poll_title(self):
+    def test_extra_state_attributes_returns_poll_title(self) -> None:
         coordinator = self._coordinator_with(
             [{"poll_id": 23, "contamination_1": 2, "poll_title": "TestTitle"}]
         )
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor.extra_state_attributes, {"poll_title": "TestTitle"})
 
-    def test_extra_state_attributes_returns_empty_dict_when_no_data(self):
+    def test_extra_state_attributes_returns_empty_dict_when_no_data(self) -> None:
         coordinator = MagicMock()
         coordinator.data = None
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor.extra_state_attributes, {})
 
-    def test_extra_state_attributes_returns_empty_dict_when_pollen_id_not_found(self):
+    def test_extra_state_attributes_returns_empty_dict_when_pollen_id_not_found(
+        self,
+    ) -> None:
         coordinator = self._coordinator_with(
             [{"poll_id": 99, "contamination_1": 1, "poll_title": "Other"}]
         )
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor.extra_state_attributes, {})
 
-    def test_attr_unique_id(self):
+    def test_attr_unique_id(self) -> None:
         coordinator = MagicMock()
         coordinator.data = {}
         sensor = self._make_sensor(coordinator, pollen_type="secale")
         self.assertEqual(sensor._attr_unique_id, "polleninformation_at_secale")
 
-    def test_entity_id_follows_stable_integration_pattern(self):
+    def test_entity_id_follows_stable_integration_pattern(self) -> None:
         coordinator = MagicMock()
         coordinator.data = {}
         sensor = self._make_sensor(coordinator, pollen_type="betula")
         self.assertEqual(sensor.entity_id, "sensor.polleninformation_at_betula")
 
-    def test_rumex_sensor_attributes(self):
+    def test_rumex_sensor_attributes(self) -> None:
         coordinator = MagicMock()
         coordinator.data = {}
         sensor = self._make_sensor(coordinator, pollen_type="rumex", pollen_id=356)
         self.assertEqual(sensor._attr_unique_id, "polleninformation_at_rumex")
 
-    def test_castanea_sensor_attributes(self):
+    def test_castanea_sensor_attributes(self) -> None:
         coordinator = MagicMock()
         coordinator.data = {}
         sensor = self._make_sensor(
@@ -242,7 +244,7 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(sensor._attr_unique_id, "polleninformation_at_castanea")
 
-    def test_plantago_sensor_attributes(self):
+    def test_plantago_sensor_attributes(self) -> None:
         coordinator = MagicMock()
         coordinator.data = {}
         sensor = self._make_sensor(
@@ -252,7 +254,7 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(sensor._attr_unique_id, "polleninformation_at_plantago")
 
-    def test_ailanthus_altissima_sensor_attributes(self):
+    def test_ailanthus_altissima_sensor_attributes(self) -> None:
         coordinator = MagicMock()
         coordinator.data = {}
         sensor = self._make_sensor(
@@ -262,44 +264,44 @@ class TestPollenSensorLogic(unittest.IsolatedAsyncioTestCase):
             sensor._attr_unique_id, "polleninformation_at_ailanthus_altissima"
         )
 
-    def test_tilia_sensor_attributes(self):
+    def test_tilia_sensor_attributes(self) -> None:
         coordinator = MagicMock()
         coordinator.data = {}
         sensor = self._make_sensor(coordinator, pollen_type="tilia", pollen_id=355)
         self.assertEqual(sensor._attr_unique_id, "polleninformation_at_tilia")
 
-    def test_attr_icon(self):
+    def test_attr_icon(self) -> None:
         coordinator = MagicMock()
         coordinator.data = {}
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor._attr_icon, "mdi:flower-pollen")
 
-    def test_attr_state_class(self):
+    def test_attr_state_class(self) -> None:
         coordinator = MagicMock()
         coordinator.data = {}
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor._attr_state_class, "measurement")
 
-    def test_attr_native_unit_of_measurement(self):
+    def test_attr_native_unit_of_measurement(self) -> None:
         coordinator = MagicMock()
         coordinator.data = {}
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor._attr_native_unit_of_measurement, "level")
 
-    def test_attr_has_entity_name(self):
+    def test_attr_has_entity_name(self) -> None:
         coordinator = MagicMock()
         coordinator.data = {}
         sensor = self._make_sensor(coordinator)
         self.assertTrue(sensor._attr_has_entity_name)
 
-    def test_state_equals_native_value(self):
+    def test_state_equals_native_value(self) -> None:
         coordinator = self._coordinator_with(
             [{"poll_id": 23, "contamination_1": 7, "poll_title": "Alternaria"}]
         )
         sensor = self._make_sensor(coordinator)
         self.assertEqual(sensor.state, sensor.native_value)
 
-    def test_state_is_none_when_no_match(self):
+    def test_state_is_none_when_no_match(self) -> None:
         coordinator = self._coordinator_with(
             [{"poll_id": 99, "contamination_1": 3, "poll_title": "Other"}]
         )
@@ -333,7 +335,12 @@ class TestAsyncSetupEntry(unittest.IsolatedAsyncioTestCase):
 
         async_add_entities.assert_called_once()
         entities = async_add_entities.call_args.args[0]
-        self.assertEqual(len(entities), len(self.POLLEN_TYPES))
+        pollensensor_entities = [
+            entity
+            for entity in entities
+            if isinstance(entity, self.sensor_module.PollenSensor)
+        ]
+        self.assertEqual(len(pollensensor_entities), len(self.POLLEN_TYPES))
 
     async def test_registered_sensors_have_correct_pollen_ids(self):
         config_entry = self._make_config_entry()
@@ -344,11 +351,16 @@ class TestAsyncSetupEntry(unittest.IsolatedAsyncioTestCase):
         await self.async_setup_entry(hass, config_entry, async_add_entities)
 
         entities = async_add_entities.call_args.args[0]
-        registered_pollen_ids = {entity._pollen_id for entity in entities}
+        pollensensor_entities = [
+            entity
+            for entity in entities
+            if isinstance(entity, self.sensor_module.PollenSensor)
+        ]
+        registered_pollen_ids = {entity._pollen_id for entity in pollensensor_entities}  # noqa: SLF001
         expected_pollen_ids = {item["pollen_id"] for item in self.POLLEN_TYPES.values()}
         self.assertEqual(registered_pollen_ids, expected_pollen_ids)
 
-    async def test_registered_sensors_have_correct_pollen_types(self):
+    async def test_registered_sensors_have_correct_contamination_types(self):
         config_entry = self._make_config_entry()
         async_add_entities = MagicMock()
         hass = MagicMock()
@@ -357,7 +369,14 @@ class TestAsyncSetupEntry(unittest.IsolatedAsyncioTestCase):
         await self.async_setup_entry(hass, config_entry, async_add_entities)
 
         entities = async_add_entities.call_args.args[0]
-        registered_types = {entity._pollen_type for entity in entities}
+        pollensensor_entities = [
+            entity
+            for entity in entities
+            if isinstance(entity, self.sensor_module.PollenSensor)
+        ]
+        registered_types = {
+            entity.contamination_type for entity in pollensensor_entities
+        }
         self.assertEqual(registered_types, set(self.POLLEN_TYPES.keys()))
 
 
