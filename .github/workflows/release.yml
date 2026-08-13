@@ -67,6 +67,7 @@ jobs:
           zip polleninformation_at.zip -r ./
 
       - name: Create release
+        if: github.ref_name == 'dev' || github.ref_name == 'main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
@@ -75,6 +76,7 @@ jobs:
           prerelease: ${{ github.ref_name == 'dev' }}
 
       - name: Upload zip to release
+        if: github.ref_name == 'dev' || github.ref_name == 'main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
