@@ -36,7 +36,7 @@ The authors and contributors accept **NO RESPONSIBILITY** for:
 
 * The location for which the pollen count is queried is taken from the configured location of the Home Assistant system. There is no possibility to specify a different location.
 
-* A device named "Polleninformation.at" is created when installing the integration. Under this device, there will be a numerical sensor for each of the 18 pollen types covered by the www.polleninformation.at API.
+* A device named "Polleninformation.at" is created when installing the integration. Under this device, there will be a numerical sensor for each of the 18 pollen types covered by the www.polleninformation.at API plus a numerical sensor for the overall allergy risk.
 
   ![alt text](images/device_and_services.png)
 
