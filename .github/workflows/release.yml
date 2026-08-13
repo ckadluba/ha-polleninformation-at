@@ -2,7 +2,8 @@ name: Release
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dev, main ]
+  workflow_dispatch:
 
 permissions:
   contents: write
