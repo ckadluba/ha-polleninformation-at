@@ -57,6 +57,9 @@
             },
             "polleninformation_at_allergyrisk": {
                 "name": "Allergierisiko"
+            },
+            "polleninformation_at_allergyrisk_hourly": {
+                "name": "Allergierisiko (stündlich)"
             }
         }
     }

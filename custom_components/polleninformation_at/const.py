@@ -27,13 +27,17 @@ POLLEN_TYPES = {
     "secale": {"pollen_id": 291},
     "cupressaceae": {"pollen_id": 17},
 }
-POLLEN_SERIES_NAME = "contamination"
+POLLEN_JSON_ELEMENT_NAME = "contamination"
 
 ALLERGYRISK_TYPE = "allergyrisk"
-ALLERGYRISK_SERIES_NAME = "allergyrisk"
+ALLERGYRISK_JSON_ELEMENT_NAME = "allergyrisk"
+
+ALLERGYRISK_HOURLY_TYPE = "allergyrisk_hourly"
+ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME = "allergyrisk_hourly"
 
 DEFAULT_INTERVAL = 6  # hours, fixed polling interval
 
 CONF_API_KEY = "api_key"
 
 ICON_FLOWER_POLLEN = "mdi:flower-pollen"
+ICON_MEDICAL_BAG = "mdi:medical-bag"

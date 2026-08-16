@@ -7,6 +7,7 @@ contamination levels from the integration's coordinator data.
 
 import logging
 from abc import abstractmethod
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from homeassistant.components.sensor import (
@@ -14,17 +15,22 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
+from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
+from homeassistant.helpers.event import async_track_time_change
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from custom_components.polleninformation_at.const import (
-    ALLERGYRISK_SERIES_NAME,
+    ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME,
+    ALLERGYRISK_HOURLY_TYPE,
+    ALLERGYRISK_JSON_ELEMENT_NAME,
     ALLERGYRISK_TYPE,
     DOMAIN,
     ICON_FLOWER_POLLEN,
+    ICON_MEDICAL_BAG,
     INTEGRATION_DEVICE_MANUFACTURER,
     INTEGRATION_NAME,
-    POLLEN_SERIES_NAME,
+    POLLEN_JSON_ELEMENT_NAME,
     POLLEN_TYPES,
 )
 
@@ -45,41 +51,54 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     # Setup pollen sensors for each pollen type defined in POLLEN_TYPES
-    sensors: list[ContaminationSensor] = [
+    sensors: list[CoordinatorSensor] = [
         PollenSensor(coordinator, pollen_type, item["pollen_id"])
         for pollen_type, item in POLLEN_TYPES.items()
     ]
 
-    # Setup an additional sensor for allergy risk
-    sensors.append(AllergyriskSensor(coordinator, ALLERGYRISK_TYPE))
+    # Setup sensor for allergyrisk
+    sensors.append(AllergyriskSensor(coordinator))
 
-    _LOGGER.debug("Setting up ContaminationSensor entities: %s", sensors)
+    # Setup sensor for hourly allergyrisk
+    sensors.append(AllergyriskHourlySensor(coordinator))
+
+    _LOGGER.debug("Setting up CoordinatorSensor entities: %s", sensors)
 
     async_add_entities(sensors)
 
 
-class ContaminationSensor(CoordinatorEntity, SensorEntity):
+class CoordinatorSensor(CoordinatorEntity, SensorEntity):
     """
-    Contamination sensor base class backed by the integration coordinator.
+    Coordinator-backed sensor base class for contamination data.
+
+    1. Builds the sensor name and unique ID based on the provided name suffix.
+    2. Uses the passed DataExtractor to extract the relevant contamination data from
+       coordinator's response and exposes the values as properties.
 
     param coordinator: The data update coordinator for this integration.
-    param contamination_type: The type of contamination (e.g., "poaceae", "betula",
-                              "allergyrisk").
-    param series_name: The name of the dictionary entries for series for this sensor
-                       (e.g., "contamination" or "allergyrisk").
+    param data_extractor: An instance of a DataExtractor subclass to extract the
+        relevant contamination data from the coordinator's response.
+    param name_suffix: The suffix for the sensor name (e.g., "poaceae", "allergyrisk").
+    param icon: The icon for the sensor entity (default is ICON_FLOWER_POLLEN)
     """
 
-    def __init__(self, coordinator, contamination_type, series_name) -> None:  # noqa: ANN001
+    def __init__(
+        self,
+        coordinator,  # noqa: ANN001
+        data_extractor: DataExtractor,
+        name_suffix: str,
+        icon: str = ICON_FLOWER_POLLEN,
+    ) -> None:
         """Initialize the sensor entity."""
         super().__init__(coordinator)
 
-        self.contamination_type = contamination_type
-        self.series_name = series_name
+        self.data_extractor = data_extractor
+        self.name_suffix = name_suffix
 
-        canonical_entity_name = f"{DOMAIN}_{contamination_type}"
+        canonical_entity_name = f"{DOMAIN}_{name_suffix}"
         self._attr_has_entity_name = True
         self._attr_unique_id = canonical_entity_name
-        self._attr_icon = ICON_FLOWER_POLLEN
+        self._attr_icon = icon
         self._attr_state_class = SensorStateClass.MEASUREMENT
         self._attr_native_unit_of_measurement = "level"
 
@@ -102,62 +121,59 @@ class ContaminationSensor(CoordinatorEntity, SensorEntity):
         )
 
         _LOGGER.debug(
-            (
-                "ContaminationSensor initialized with _attr_unique_id: %s, "
-                "contamination_type: %s, series_name: %s"
-            ),
+            ("CoordinatorSensor initialized with _attr_unique_id: %s, name_suffix: %s"),
             self._attr_unique_id,
-            self.contamination_type,
-            self.series_name,
+            self.name_suffix,
         )
 
     @property
     def native_value(self) -> int | None:
         """Return the current contamination level."""
-        data = self._get_contamination_entry()
-
-        return data.get(f"{self.series_name}_1") if data else None
+        return self.data_extractor.get_native_value()
 
     @property
     def extra_state_attributes(self) -> dict:
         """Return additional sensor attributes."""
-        data = self._get_contamination_entry()
-        if not data:
-            return {}
+        return self.data_extractor.get_extra_state_attributes()
 
-        return {
-            "poll_title": data.get("poll_title"),
-        }
+
+class DataExtractor:
+    """Mixin base class to extract contamination data from the coordinator response."""
+
+    def __init__(self, coordinator) -> None:  # noqa: ANN001
+        """Initialize the data extractor."""
+        self.coordinator = coordinator
 
     @abstractmethod
-    def _get_contamination_entry(self) -> dict | None:
-        """Extract the contamination entry for this type."""
+    def get_native_value(self) -> int | None:
+        """Return the current contamination level for the given element name."""
+
+    @abstractmethod
+    def get_extra_state_attributes(self) -> dict:
+        """Return additional sensor attributes."""
 
 
-class PollenSensor(ContaminationSensor):
+class PollenDataExtractor(DataExtractor):
     """
-    Polleninformation.at sensor backed by the integration coordinator.
+    Mixin class to extract pollen contamination data from the coordinator response.
 
     param coordinator: The data update coordinator for this integration.
-    param contamination_type: The type of contamination (e.g., "poaceae", "betula").
     param pollen_id: The numeric ID for the pollen type according to the API response.
     """
 
-    def __init__(self, coordinator, contamination_type, pollen_id) -> None:  # noqa: ANN001
-        """Initialize the sensor entity."""
-        super().__init__(coordinator, contamination_type, POLLEN_SERIES_NAME)
-
+    def __init__(self, coordinator, pollen_id: int) -> None:  # noqa: ANN001
+        """Initialize the data extractor."""
+        self.coordinator = coordinator
         self._pollen_id = pollen_id
 
-        _LOGGER.debug(
-            (
-                "PollenSensor initialized with _attr_unique_id: %s, "
-                "contamination_type: %s, _pollen_id: %s"
-            ),
-            self._attr_unique_id,
-            self.contamination_type,
-            self._pollen_id,
-        )
+    def get_native_value(self) -> int | None:
+        """Return the current contamination level for the given element name."""
+        data = self._get_contamination_entry()
+        return data.get(f"{POLLEN_JSON_ELEMENT_NAME}_1") if data else None
+
+    def get_extra_state_attributes(self) -> dict:
+        """Return additional sensor attributes."""
+        return {}
 
     def _get_contamination_entry(self) -> dict | None:
         """Extract the contamination entry for this pollen type."""
@@ -165,7 +181,7 @@ class PollenSensor(ContaminationSensor):
         if not response:
             return None
 
-        contamination = response.get("contamination")
+        contamination = response.get(POLLEN_JSON_ELEMENT_NAME)
         if isinstance(contamination, list):
             for entry in contamination:
                 if str(entry.get("poll_id")) == str(self._pollen_id):
@@ -174,26 +190,53 @@ class PollenSensor(ContaminationSensor):
         return None
 
 
-class AllergyriskSensor(ContaminationSensor):
+class PollenSensor(CoordinatorSensor):
     """
-    Allergyrisk sensor backed by the integration coordinator.
+    Sensor for the current contamination level for one specific pollen type.
 
     param coordinator: The data update coordinator for this integration.
-    param contamination_type: The type of contamination (e.g., "poaceae", "betula").
+    param pollen_name: The name of the pollen type (e.g., "Poaceae", "Betula").
+    param pollen_id: The numeric ID for the pollen type according to the API response.
     """
 
-    def __init__(self, coordinator, contamination_type) -> None:  # noqa: ANN001
+    def __init__(self, coordinator, pollen_name: str, pollen_id: int) -> None:  # noqa: ANN001
         """Initialize the sensor entity."""
-        super().__init__(coordinator, contamination_type, ALLERGYRISK_SERIES_NAME)
+        super().__init__(
+            coordinator, PollenDataExtractor(coordinator, pollen_id), pollen_name
+        )
+
+        self._pollen_id = pollen_id
 
         _LOGGER.debug(
             (
-                "AllergyriskSensor initialized with _attr_unique_id: %s, "
-                "contamination_type: %s"
+                "PollenSensor initialized with _attr_unique_id: %s, "
+                "pollen_name: %s, pollen_id: %s"
             ),
             self._attr_unique_id,
-            self.contamination_type,
+            pollen_name,
+            pollen_id,
         )
+
+
+class AllergyriskDataExtractor(DataExtractor):
+    """
+    Mixin class to extract allergyrisk contamination data from the coordinator response.
+
+    param coordinator: The data update coordinator for this integration.
+    """
+
+    def __init__(self, coordinator) -> None:  # noqa: ANN001
+        """Initialize the data extractor."""
+        self.coordinator = coordinator
+
+    def get_native_value(self) -> int | None:
+        """Return the current contamination level for the given element name."""
+        data = self._get_contamination_entry()
+        return data.get(f"{ALLERGYRISK_JSON_ELEMENT_NAME}_1") if data else None
+
+    def get_extra_state_attributes(self) -> dict:
+        """Return additional sensor attributes."""
+        return {}
 
     def _get_contamination_entry(self) -> dict | None:
         """Extract the contamination entry for allergyrisk."""
@@ -201,8 +244,117 @@ class AllergyriskSensor(ContaminationSensor):
         if not response:
             return None
 
-        contamination = response.get(ALLERGYRISK_TYPE)
+        contamination = response.get(ALLERGYRISK_JSON_ELEMENT_NAME)
         if isinstance(contamination, dict):
             return contamination
 
         return None
+
+
+class AllergyriskSensor(CoordinatorSensor):
+    """
+    Sensor for the overall current allergyrisk level.
+
+    param coordinator: The data update coordinator for this integration.
+    """
+
+    def __init__(self, coordinator) -> None:  # noqa: ANN001
+        """Initialize the sensor entity."""
+        super().__init__(
+            coordinator,
+            AllergyriskDataExtractor(coordinator),
+            ALLERGYRISK_TYPE,
+            ICON_MEDICAL_BAG,
+        )
+
+        _LOGGER.debug(
+            ("AllergyriskSensor initialized with _attr_unique_id: %s"),
+            self._attr_unique_id,
+        )
+
+
+class AllergyriskHourlyDataExtractor(DataExtractor):
+    """
+    Mixin class to extract hourly allergyrisk data from the coordinator response.
+
+    param coordinator: The data update coordinator for this integration.
+    """
+
+    def __init__(self, coordinator) -> None:  # noqa: ANN001
+        """Initialize the data extractor."""
+        self.coordinator = coordinator
+
+    def get_native_value(self) -> int | None:
+        """Return the current contamination level for the given element name."""
+        data = self._get_contamination_entry()
+        if data is None:
+            return None
+        element = data.get(f"{ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME}_1")
+        if element is None:
+            return None
+
+        current_hour = datetime.now().astimezone().hour
+        if not isinstance(element, list) or current_hour >= len(element):
+            return None
+
+        return int(element[current_hour])
+
+    def get_extra_state_attributes(self) -> dict:
+        """Return additional sensor attributes."""
+        return {}
+
+    def _get_contamination_entry(self) -> dict | None:
+        """Extract the contamination entry for allergyrisk."""
+        response = self.coordinator.data
+        if not response:
+            return None
+
+        contamination = response.get(ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME)
+        if isinstance(contamination, dict):
+            return contamination
+
+        return None
+
+
+class AllergyriskHourlySensor(CoordinatorSensor):
+    """
+    Sensor for the overall current hour allergyrisk level.
+
+    param coordinator: The data update coordinator for this integration.
+    """
+
+    def __init__(self, coordinator) -> None:  # noqa: ANN001
+        """Initialize the sensor entity."""
+        super().__init__(
+            coordinator,
+            AllergyriskHourlyDataExtractor(coordinator),
+            ALLERGYRISK_HOURLY_TYPE,
+            ICON_MEDICAL_BAG,
+        )
+
+        _LOGGER.debug(
+            ("AllergyriskSensor initialized with _attr_unique_id: %s"),
+            self._attr_unique_id,
+        )
+
+    async def async_added_to_hass(self) -> None:
+        """Set up the hourly update listener."""
+        await super().async_added_to_hass()
+
+        self.async_on_remove(
+            async_track_time_change(
+                self.hass,
+                self._handle_time_change,
+                hour=None,
+                minute=0,
+                second=0,
+            )
+        )
+
+    @callback
+    def _handle_time_change(self, now: datetime) -> None:  # noqa: ARG002
+        """Update the sensor at the beginning of every hour."""
+        _LOGGER.debug(
+            "AllergyriskHourlySensor updating value at the beginning of the hour."
+        )
+        self.async_write_ha_state()
