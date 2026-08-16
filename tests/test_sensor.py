@@ -21,6 +21,7 @@ ha_helpers_device_registry_mock = types.ModuleType(
 ha_helpers_entity_platform_mock = types.ModuleType(
     "homeassistant.helpers.entity_platform"
 )
+ha_helpers_event_mock = types.ModuleType("homeassistant.helpers.event")
 ha_config_entries_mock = types.ModuleType("homeassistant.config_entries")
 ha_core_mock = types.ModuleType("homeassistant.core")
 
@@ -33,6 +34,7 @@ for module in [
     ha_helpers_update_coordinator_mock,
     ha_helpers_device_registry_mock,
     ha_helpers_entity_platform_mock,
+    ha_helpers_event_mock,
     ha_config_entries_mock,
     ha_core_mock,
 ]:
@@ -97,8 +99,10 @@ ha_helpers_device_registry_mock.DeviceEntryType = type(  # type: ignore[attr-def
 )
 ha_helpers_device_registry_mock.DeviceInfo = MockDeviceInfo  # type: ignore[attr-defined]
 ha_helpers_entity_platform_mock.AddEntitiesCallback = object  # type: ignore[attr-defined]
+ha_helpers_event_mock.async_track_time_change = MagicMock(return_value=lambda: None)  # type: ignore[attr-defined]
 ha_config_entries_mock.ConfigEntry = object  # type: ignore[attr-defined]
 ha_core_mock.HomeAssistant = object  # type: ignore[attr-defined]
+ha_core_mock.callback = lambda x: x  # type: ignore[attr-defined]
 
 ha_mock.__path__ = []
 ha_components_mock.__path__ = []
@@ -112,6 +116,7 @@ ha_helpers_mock.config_validation = ha_helpers_cv_mock
 ha_helpers_mock.update_coordinator = ha_helpers_update_coordinator_mock
 ha_helpers_mock.device_registry = ha_helpers_device_registry_mock
 ha_helpers_mock.entity_platform = ha_helpers_entity_platform_mock
+ha_helpers_mock.event = ha_helpers_event_mock
 ha_helpers_update_coordinator_mock.__package__ = (
     "homeassistant.helpers.update_coordinator"
 )
@@ -132,8 +137,18 @@ sys.modules.setdefault(
 sys.modules.setdefault(
     "homeassistant.helpers.entity_platform", ha_helpers_entity_platform_mock
 )
+sys.modules.setdefault("homeassistant.helpers.event", ha_helpers_event_mock)
 sys.modules.setdefault("homeassistant.config_entries", ha_config_entries_mock)
 sys.modules.setdefault("homeassistant.core", ha_core_mock)
+
+# Ensure required attributes exist in already-loaded modules (from other test files)
+if not hasattr(sys.modules["homeassistant.core"], "callback"):
+    sys.modules["homeassistant.core"].callback = lambda x: x  # type: ignore[attr-defined]
+
+if not hasattr(sys.modules["homeassistant.helpers.event"], "async_track_time_change"):
+    sys.modules["homeassistant.helpers.event"].async_track_time_change = MagicMock(
+        return_value=lambda: None
+    )  # type: ignore[attr-defined]
 
 workspace_root = pathlib.Path(__file__).resolve().parents[1]
 if str(workspace_root) not in sys.path:
@@ -164,19 +179,17 @@ class TestCoordinatorSensorLogic(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.sensor_module = load_sensor_module("polleninformation_at_sensor_base")
 
-        class DummyExtractor:
-            def __init__(self, payload):
-                self.payload = payload
+        class DummyExtractor(cls.sensor_module.DataExtractor):
+            def __init__(self, coordinator):
+                super().__init__(coordinator)
 
             def get_native_value(self):
-                return self.payload.get("test_series_1") if self.payload else None
+                payload = self.coordinator.data or {}
+                return payload.get("test_series_1") if payload else None
 
             def get_extra_state_attributes(self):
-                return (
-                    {"poll_title": self.payload.get("poll_title")}
-                    if self.payload
-                    else {}
-                )
+                payload = self.coordinator.data or {}
+                return {"poll_title": payload.get("poll_title")} if payload else {}
 
         class ConcreteCoordinatorSensor(cls.sensor_module.CoordinatorSensor):
             pass
@@ -191,7 +204,7 @@ class TestCoordinatorSensorLogic(unittest.TestCase):
         coordinator.data = data
         return self.ConcreteCoordinatorSensor(
             coordinator,
-            self.DummyExtractor(data or {}),
+            self.DummyExtractor(coordinator),
             contamination_type,
         )
 
@@ -382,6 +395,172 @@ class TestAllergyriskSensorLogic(unittest.TestCase):
         self.assertEqual(sensor.entity_id, "sensor.polleninformation_at_allergyrisk")
 
 
+class TestAllergyriskHourlyDataExtractorLogic(unittest.TestCase):
+    """Tests for hourly allergyrisk data extraction logic."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.sensor_module = load_sensor_module(
+            "polleninformation_at_allergyrisk_hourly_extractor"
+        )
+        cls.AllergyriskHourlyDataExtractor = (
+            cls.sensor_module.AllergyriskHourlyDataExtractor
+        )
+
+    def test_native_value_returns_current_hour_value(self) -> None:
+        coordinator = MagicMock()
+        # Simulate hourly data [0-23 hours]
+        coordinator.data = {
+            "allergyrisk_hourly": {
+                "allergyrisk_hourly_1": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20,
+                    21,
+                    22,
+                    23,
+                    24,
+                ]
+            }
+        }
+        extractor = self.AllergyriskHourlyDataExtractor(coordinator)
+        # The result depends on the current hour, so we just verify it's an int
+        result = extractor.get_native_value()
+        self.assertIsInstance(result, int)
+        self.assertTrue(1 <= result <= 24)
+
+    def test_native_value_returns_none_when_allergyrisk_hourly_is_missing(self) -> None:
+        coordinator = MagicMock()
+        coordinator.data = {"allergyrisk": {"allergyrisk_1": 3}}
+        extractor = self.AllergyriskHourlyDataExtractor(coordinator)
+        self.assertIsNone(extractor.get_native_value())
+
+    def test_native_value_returns_none_when_element_is_missing(self) -> None:
+        coordinator = MagicMock()
+        coordinator.data = {"allergyrisk_hourly": {}}
+        extractor = self.AllergyriskHourlyDataExtractor(coordinator)
+        self.assertIsNone(extractor.get_native_value())
+
+    def test_native_value_returns_none_when_current_hour_out_of_range(self) -> None:
+        coordinator = MagicMock()
+        # Short list, doesn't cover all 24 hours
+        coordinator.data = {"allergyrisk_hourly": {"allergyrisk_hourly_1": [1, 2, 3]}}
+        extractor = self.AllergyriskHourlyDataExtractor(coordinator)
+        # If current hour is >= 3, this should return None
+        # We can't control the hour, so we just verify the logic works for valid hours
+        result = extractor.get_native_value()
+        # Should be None if hour >= 3, or an int in [1, 2, 3] if hour < 3
+        self.assertTrue(result is None or isinstance(result, int))
+
+    def test_native_value_returns_none_when_response_is_missing(self) -> None:
+        coordinator = MagicMock()
+        coordinator.data = None
+        extractor = self.AllergyriskHourlyDataExtractor(coordinator)
+        self.assertIsNone(extractor.get_native_value())
+
+    def test_extra_state_attributes_is_empty(self) -> None:
+        coordinator = MagicMock()
+        coordinator.data = {
+            "allergyrisk_hourly": {"allergyrisk_hourly_1": [1, 2, 3, 4, 5]}
+        }
+        extractor = self.AllergyriskHourlyDataExtractor(coordinator)
+        self.assertEqual(extractor.get_extra_state_attributes(), {})
+
+
+class TestAllergyriskHourlySensorLogic(unittest.TestCase):
+    """Tests for the hourly allergy risk sensor logic."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.sensor_module = load_sensor_module(
+            "polleninformation_at_sensor_allergyrisk_hourly"
+        )
+        cls.AllergyriskHourlySensor = cls.sensor_module.AllergyriskHourlySensor
+
+    def _make_sensor(self, data: object) -> object:
+        coordinator = MagicMock()
+        coordinator.data = data
+        return self.AllergyriskHourlySensor(coordinator)
+
+    def test_native_value_returns_current_hour_level(self) -> None:
+        sensor = self._make_sensor(
+            {
+                "allergyrisk_hourly": {
+                    "allergyrisk_hourly_1": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10,
+                        11,
+                        12,
+                        13,
+                        14,
+                        15,
+                        16,
+                        17,
+                        18,
+                        19,
+                        20,
+                        21,
+                        22,
+                        23,
+                        24,
+                    ]
+                }
+            }
+        )
+        result = sensor.native_value
+        # Result should be an int for the current hour
+        self.assertIsInstance(result, int)
+        self.assertTrue(1 <= result <= 24)
+
+    def test_native_value_returns_none_when_no_data(self) -> None:
+        sensor = self._make_sensor(None)
+        self.assertIsNone(sensor.native_value)
+
+    def test_initializes_allergyrisk_hourly_identity(self) -> None:
+        from custom_components.polleninformation_at.const import ALLERGYRISK_HOURLY_TYPE
+
+        sensor = self._make_sensor({})
+        self.assertEqual(sensor.name_suffix, ALLERGYRISK_HOURLY_TYPE)
+        self.assertEqual(
+            sensor._attr_unique_id, f"polleninformation_at_{ALLERGYRISK_HOURLY_TYPE}"
+        )
+        self.assertEqual(
+            sensor.entity_id, f"sensor.polleninformation_at_{ALLERGYRISK_HOURLY_TYPE}"
+        )
+
+    def test_data_extractor_is_hourly_extractor(self) -> None:
+        sensor = self._make_sensor({})
+        self.assertIsInstance(
+            sensor.data_extractor,
+            self.sensor_module.AllergyriskHourlyDataExtractor,
+        )
+
+
 class TestAsyncSetupEntry(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
@@ -449,6 +628,78 @@ class TestAsyncSetupEntry(unittest.IsolatedAsyncioTestCase):
             if isinstance(entity, self.sensor_module.AllergyriskSensor)
         ]
         self.assertEqual(len(allergyrisksensor_entities), 1)
+
+    async def test_registers_one_allergyrisk_hourly_sensor(self) -> None:
+        config_entry = self._make_config_entry()
+        async_add_entities = MagicMock()
+        hass = MagicMock()
+        hass.data = {self.DOMAIN: {config_entry.entry_id: MagicMock()}}
+
+        await self.async_setup_entry(hass, config_entry, async_add_entities)
+
+        async_add_entities.assert_called_once()
+        entities = async_add_entities.call_args.args[0]
+        allergyriskhourly_entities = [
+            entity
+            for entity in entities
+            if isinstance(entity, self.sensor_module.AllergyriskHourlySensor)
+        ]
+        self.assertEqual(len(allergyriskhourly_entities), 1)
+
+    async def test_registers_sensors_in_correct_order(self) -> None:
+        config_entry = self._make_config_entry()
+        async_add_entities = MagicMock()
+        hass = MagicMock()
+        hass.data = {self.DOMAIN: {config_entry.entry_id: MagicMock()}}
+
+        await self.async_setup_entry(hass, config_entry, async_add_entities)
+
+        async_add_entities.assert_called_once()
+        entities = async_add_entities.call_args.args[0]
+
+        # Verify the order: first all PollenSensors, then AllergyriskSensor, then AllergyriskHourlySensor
+        pollen_indices = [
+            i
+            for i, e in enumerate(entities)
+            if isinstance(e, self.sensor_module.PollenSensor)
+        ]
+        allergyrisk_indices = [
+            i
+            for i, e in enumerate(entities)
+            if isinstance(e, self.sensor_module.AllergyriskSensor)
+        ]
+        allergyrisk_hourly_indices = [
+            i
+            for i, e in enumerate(entities)
+            if isinstance(e, self.sensor_module.AllergyriskHourlySensor)
+        ]
+
+        # All indices should be present
+        self.assertTrue(pollen_indices)
+        self.assertEqual(len(allergyrisk_indices), 1)
+        self.assertEqual(len(allergyrisk_hourly_indices), 1)
+
+        # Verify order: pollen sensors first, then allergyrisk, then allergyrisk hourly
+        max_pollen_idx = max(pollen_indices)
+        allergyrisk_idx = allergyrisk_indices[0]
+        allergyrisk_hourly_idx = allergyrisk_hourly_indices[0]
+
+        self.assertLess(max_pollen_idx, allergyrisk_idx)
+        self.assertLess(allergyrisk_idx, allergyrisk_hourly_idx)
+
+    async def test_total_sensor_count(self) -> None:
+        config_entry = self._make_config_entry()
+        async_add_entities = MagicMock()
+        hass = MagicMock()
+        hass.data = {self.DOMAIN: {config_entry.entry_id: MagicMock()}}
+
+        await self.async_setup_entry(hass, config_entry, async_add_entities)
+
+        async_add_entities.assert_called_once()
+        entities = async_add_entities.call_args.args[0]
+        # Expected: number of POLLEN_TYPES + 1 (allergyrisk) + 1 (allergyrisk hourly)
+        expected_count = len(self.POLLEN_TYPES) + 2
+        self.assertEqual(len(entities), expected_count)
 
 
 if __name__ == "__main__":

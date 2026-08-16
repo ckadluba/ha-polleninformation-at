@@ -32,6 +32,9 @@ POLLEN_JSON_ELEMENT_NAME = "contamination"
 ALLERGYRISK_TYPE = "allergyrisk"
 ALLERGYRISK_JSON_ELEMENT_NAME = "allergyrisk"
 
+ALLERGYRISK_HOURLY_TYPE = "allergyrisk_hourly"
+ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME = "allergyrisk_hourly"
+
 DEFAULT_INTERVAL = 6  # hours, fixed polling interval
 
 CONF_API_KEY = "api_key"
