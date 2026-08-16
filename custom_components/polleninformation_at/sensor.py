@@ -352,7 +352,7 @@ class AllergyriskHourlySensor(CoordinatorSensor):
         )
 
     @callback
-    def _handle_time_change(self, now: datetime) -> None:
+    def _handle_time_change(self, now: datetime) -> None:  # noqa: ARG002
         """Update the sensor at the beginning of every hour."""
         _LOGGER.debug(
             "AllergyriskHourlySensor updating value at the beginning of the hour."
