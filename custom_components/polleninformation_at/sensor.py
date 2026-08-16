@@ -76,11 +76,11 @@ class CoordinatorSensor(CoordinatorEntity, SensorEntity):
 
     def __init__(
         self,
-        coordinator,
+        coordinator,  # noqa: ANN001
         data_extractor: DataExtractor,
         name_suffix: str,
         icon: str = ICON_FLOWER_POLLEN,
-    ) -> None:  # noqa: ANN001
+    ) -> None:
         """Initialize the sensor entity."""
         super().__init__(coordinator)
 
