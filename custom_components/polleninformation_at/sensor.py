@@ -354,4 +354,7 @@ class AllergyriskHourlySensor(CoordinatorSensor):
     @callback
     def _handle_time_change(self, now: datetime) -> None:
         """Update the sensor at the beginning of every hour."""
+        _LOGGER.debug(
+            "AllergyriskHourlySensor updating value at the beginning of the hour."
+        )
         self.async_write_ha_state()
