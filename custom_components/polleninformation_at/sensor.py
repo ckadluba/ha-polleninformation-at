@@ -7,6 +7,7 @@ contamination levels from the integration's coordinator data.
 
 import logging
 from abc import abstractmethod
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from homeassistant.components.sensor import (
@@ -14,10 +15,14 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
+from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
+from homeassistant.helpers.event import async_track_time_change
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from custom_components.polleninformation_at.const import (
+    ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME,
+    ALLERGYRISK_HOURLY_TYPE,
     ALLERGYRISK_JSON_ELEMENT_NAME,
     ALLERGYRISK_TYPE,
     DOMAIN,
@@ -51,8 +56,11 @@ async def async_setup_entry(
         for pollen_type, item in POLLEN_TYPES.items()
     ]
 
-    # Setup an additional sensor for current allergyrisk
+    # Setup sensor for allergyrisk
     sensors.append(AllergyriskSensor(coordinator))
+
+    # Setup sensor for hourly allergyrisk
+    sensors.append(AllergyriskHourlySensor(coordinator))
 
     _LOGGER.debug("Setting up CoordinatorSensor entities: %s", sensors)
 
@@ -263,3 +271,87 @@ class AllergyriskSensor(CoordinatorSensor):
             ("AllergyriskSensor initialized with _attr_unique_id: %s"),
             self._attr_unique_id,
         )
+
+
+class AllergyriskHourlyDataExtractor(DataExtractor):
+    """
+    Mixin class to extract hourly allergyrisk data from the coordinator response.
+
+    param coordinator: The data update coordinator for this integration.
+    """
+
+    def __init__(self, coordinator) -> None:  # noqa: ANN001
+        """Initialize the data extractor."""
+        self.coordinator = coordinator
+
+    def get_native_value(self) -> int | None:
+        """Return the current contamination level for the given element name."""
+        data = self._get_contamination_entry()
+        if data is None:
+            return None
+        element = data.get(f"{ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME}_1")
+        if element is None:
+            return None
+
+        current_hour = datetime.now().astimezone().hour
+        if not isinstance(element, list) or current_hour >= len(element):
+            return None
+
+        return int(element[current_hour])
+
+    def get_extra_state_attributes(self) -> dict:
+        """Return additional sensor attributes."""
+        return {}
+
+    def _get_contamination_entry(self) -> dict | None:
+        """Extract the contamination entry for allergyrisk."""
+        response = self.coordinator.data
+        if not response:
+            return None
+
+        contamination = response.get(ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME)
+        if isinstance(contamination, dict):
+            return contamination
+
+        return None
+
+
+class AllergyriskHourlySensor(CoordinatorSensor):
+    """
+    Sensor for the overall current hour allergyrisk level.
+
+    param coordinator: The data update coordinator for this integration.
+    """
+
+    def __init__(self, coordinator) -> None:  # noqa: ANN001
+        """Initialize the sensor entity."""
+        super().__init__(
+            coordinator,
+            AllergyriskHourlyDataExtractor(coordinator),
+            ALLERGYRISK_HOURLY_TYPE,
+            ICON_MEDICAL_BAG,
+        )
+
+        _LOGGER.debug(
+            ("AllergyriskSensor initialized with _attr_unique_id: %s"),
+            self._attr_unique_id,
+        )
+
+    async def async_added_to_hass(self) -> None:
+        """Set up the hourly update listener."""
+        await super().async_added_to_hass()
+
+        self.async_on_remove(
+            async_track_time_change(
+                self.hass,
+                self._handle_time_change,
+                hour=None,
+                minute=0,
+                second=0,
+            )
+        )
+
+    @callback
+    def _handle_time_change(self, now: datetime) -> None:
+        """Update the sensor at the beginning of every hour."""
+        self.async_write_ha_state()
