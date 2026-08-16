@@ -21,6 +21,7 @@ ha_helpers_device_registry_mock = types.ModuleType(
 ha_helpers_entity_platform_mock = types.ModuleType(
     "homeassistant.helpers.entity_platform"
 )
+ha_helpers_event_mock = types.ModuleType("homeassistant.helpers.event")
 ha_config_entries_mock = types.ModuleType("homeassistant.config_entries")
 ha_core_mock = types.ModuleType("homeassistant.core")
 
@@ -33,6 +34,7 @@ for module in [
     ha_helpers_update_coordinator_mock,
     ha_helpers_device_registry_mock,
     ha_helpers_entity_platform_mock,
+    ha_helpers_event_mock,
     ha_config_entries_mock,
     ha_core_mock,
 ]:
@@ -97,8 +99,10 @@ ha_helpers_device_registry_mock.DeviceEntryType = type(  # type: ignore[attr-def
 )
 ha_helpers_device_registry_mock.DeviceInfo = MockDeviceInfo  # type: ignore[attr-defined]
 ha_helpers_entity_platform_mock.AddEntitiesCallback = object  # type: ignore[attr-defined]
+ha_helpers_event_mock.async_track_time_change = MagicMock(return_value=lambda: None)  # type: ignore[attr-defined]
 ha_config_entries_mock.ConfigEntry = object  # type: ignore[attr-defined]
 ha_core_mock.HomeAssistant = object  # type: ignore[attr-defined]
+ha_core_mock.callback = lambda x: x  # type: ignore[attr-defined]
 
 ha_mock.__path__ = []
 ha_components_mock.__path__ = []
@@ -112,6 +116,7 @@ ha_helpers_mock.config_validation = ha_helpers_cv_mock
 ha_helpers_mock.update_coordinator = ha_helpers_update_coordinator_mock
 ha_helpers_mock.device_registry = ha_helpers_device_registry_mock
 ha_helpers_mock.entity_platform = ha_helpers_entity_platform_mock
+ha_helpers_mock.event = ha_helpers_event_mock
 ha_helpers_update_coordinator_mock.__package__ = (
     "homeassistant.helpers.update_coordinator"
 )
@@ -132,8 +137,18 @@ sys.modules.setdefault(
 sys.modules.setdefault(
     "homeassistant.helpers.entity_platform", ha_helpers_entity_platform_mock
 )
+sys.modules.setdefault("homeassistant.helpers.event", ha_helpers_event_mock)
 sys.modules.setdefault("homeassistant.config_entries", ha_config_entries_mock)
 sys.modules.setdefault("homeassistant.core", ha_core_mock)
+
+# Ensure required attributes exist in already-loaded modules (from other test files)
+if not hasattr(sys.modules["homeassistant.core"], "callback"):
+    sys.modules["homeassistant.core"].callback = lambda x: x  # type: ignore[attr-defined]
+
+if not hasattr(sys.modules["homeassistant.helpers.event"], "async_track_time_change"):
+    sys.modules["homeassistant.helpers.event"].async_track_time_change = MagicMock(
+        return_value=lambda: None
+    )  # type: ignore[attr-defined]
 
 workspace_root = pathlib.Path(__file__).resolve().parents[1]
 if str(workspace_root) not in sys.path:
@@ -164,19 +179,17 @@ class TestCoordinatorSensorLogic(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.sensor_module = load_sensor_module("polleninformation_at_sensor_base")
 
-        class DummyExtractor:
-            def __init__(self, payload):
-                self.payload = payload
+        class DummyExtractor(cls.sensor_module.DataExtractor):
+            def __init__(self, coordinator):
+                super().__init__(coordinator)
 
             def get_native_value(self):
-                return self.payload.get("test_series_1") if self.payload else None
+                payload = self.coordinator.data or {}
+                return payload.get("test_series_1") if payload else None
 
             def get_extra_state_attributes(self):
-                return (
-                    {"poll_title": self.payload.get("poll_title")}
-                    if self.payload
-                    else {}
-                )
+                payload = self.coordinator.data or {}
+                return {"poll_title": payload.get("poll_title")} if payload else {}
 
         class ConcreteCoordinatorSensor(cls.sensor_module.CoordinatorSensor):
             pass
@@ -191,7 +204,7 @@ class TestCoordinatorSensorLogic(unittest.TestCase):
         coordinator.data = data
         return self.ConcreteCoordinatorSensor(
             coordinator,
-            self.DummyExtractor(data or {}),
+            self.DummyExtractor(coordinator),
             contamination_type,
         )
 
