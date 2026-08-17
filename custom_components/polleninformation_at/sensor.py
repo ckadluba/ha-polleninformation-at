@@ -7,7 +7,6 @@ contamination levels from the integration's coordinator data.
 
 import logging
 from abc import abstractmethod
-from datetime import datetime
 from typing import TYPE_CHECKING
 
 from homeassistant.components.sensor import (
@@ -19,6 +18,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.event import async_track_time_change
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from custom_components.polleninformation_at.const import (
     ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME,
@@ -35,6 +35,8 @@ from custom_components.polleninformation_at.const import (
 )
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -62,7 +64,7 @@ async def async_setup_entry(
     # Setup sensor for hourly allergyrisk
     sensors.append(AllergyriskHourlySensor(coordinator))
 
-    _LOGGER.debug("Setting up CoordinatorSensor entities: %s", sensors)
+    _LOGGER.debug("Setting up sensor entities: %s", sensors)
 
     async_add_entities(sensors)
 
@@ -187,6 +189,15 @@ class PollenDataExtractor(DataExtractor):
                 if str(entry.get("poll_id")) == str(self._pollen_id):
                     return entry
 
+        _LOGGER.error(
+            (
+                "PollenDataExtractor element %s containing poll_id %d "
+                "not found in data: %s"
+            ),
+            POLLEN_JSON_ELEMENT_NAME,
+            self._pollen_id,
+            response,
+        )
         return None
 
 
@@ -220,7 +231,7 @@ class PollenSensor(CoordinatorSensor):
 
 class AllergyriskDataExtractor(DataExtractor):
     """
-    Mixin class to extract allergyrisk contamination data from the coordinator response.
+    Mixin class to extract allergyrisk data from the coordinator response.
 
     param coordinator: The data update coordinator for this integration.
     """
@@ -230,7 +241,7 @@ class AllergyriskDataExtractor(DataExtractor):
         self.coordinator = coordinator
 
     def get_native_value(self) -> int | None:
-        """Return the current contamination level for the given element name."""
+        """Return the current allergyrisk level for the given element name."""
         data = self._get_contamination_entry()
         return data.get(f"{ALLERGYRISK_JSON_ELEMENT_NAME}_1") if data else None
 
@@ -248,6 +259,11 @@ class AllergyriskDataExtractor(DataExtractor):
         if isinstance(contamination, dict):
             return contamination
 
+        _LOGGER.error(
+            "AllergyriskHourlyDataExtractor element %s not found in data: %s",
+            ALLERGYRISK_JSON_ELEMENT_NAME,
+            response,
+        )
         return None
 
 
@@ -285,19 +301,42 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
         self.coordinator = coordinator
 
     def get_native_value(self) -> int | None:
-        """Return the current contamination level for the given element name."""
+        """Return the current hour allergyrisk level for the given element name."""
         data = self._get_contamination_entry()
         if data is None:
             return None
+
         element = data.get(f"{ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME}_1")
         if element is None:
+            _LOGGER.error(
+                "AllergyriskHourlyDataExtractor element %s not found in data: %s",
+                ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME,
+                data,
+            )
             return None
 
-        current_hour = datetime.now().astimezone().hour
+        current_hour = dt_util.now().hour
+        _LOGGER.debug(
+            "AllergyriskHourlyDataExtractor current_hour=%d, element=%s",
+            current_hour,
+            element,
+        )
+
         if not isinstance(element, list) or current_hour >= len(element):
+            _LOGGER.error(
+                "AllergyriskHourlyDataExtractor element is not a list "
+                "or current_hour=%d is out of bounds, element=%s",
+                current_hour,
+                element,
+            )
             return None
 
-        return int(element[current_hour])
+        allergyrisk_value = element[current_hour]
+        _LOGGER.debug(
+            "AllergyriskHourlyDataExtractor allergyrisk_value: %s", allergyrisk_value
+        )
+
+        return allergyrisk_value
 
     def get_extra_state_attributes(self) -> dict:
         """Return additional sensor attributes."""
@@ -313,6 +352,11 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
         if isinstance(contamination, dict):
             return contamination
 
+        _LOGGER.error(
+            "AllergyriskHourlyDataExtractor element %s not found in data: %s",
+            ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME,
+            response,
+        )
         return None
 
 
