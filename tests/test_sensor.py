@@ -23,6 +23,7 @@ ha_helpers_entity_platform_mock = types.ModuleType(
 )
 ha_helpers_event_mock = types.ModuleType("homeassistant.helpers.event")
 ha_config_entries_mock = types.ModuleType("homeassistant.config_entries")
+ha_util_mock = types.ModuleType("homeassistant.util")
 ha_core_mock = types.ModuleType("homeassistant.core")
 
 for module in [
@@ -36,6 +37,7 @@ for module in [
     ha_helpers_entity_platform_mock,
     ha_helpers_event_mock,
     ha_config_entries_mock,
+    ha_util_mock,
     ha_core_mock,
 ]:
     module.__package__ = module.__name__
@@ -83,6 +85,28 @@ class MockDeviceInfo:  # noqa: D101
         pass
 
 
+class MockDateTime:  # noqa: D101
+    """Mock datetime object with hour attribute."""
+
+    def __init__(self, hour: int = 0) -> None:
+        self.hour = hour
+
+
+class MockDatetimeModule:  # noqa: D101
+    """Mock homeassistant.util.dt module."""
+
+    @staticmethod
+    def now():  # noqa: ANN201
+        """Return a mock datetime object."""
+        from datetime import datetime
+
+        dt = datetime.now().astimezone()
+        return MockDateTime(hour=dt.hour)
+
+
+ha_util_dt_mock = MockDatetimeModule()
+ha_util_mock.dt = ha_util_dt_mock  # type: ignore[attr-defined]
+
 ha_components_sensor_mock.SensorEntity = MockSensorEntity  # type: ignore[attr-defined]
 ha_components_sensor_mock.SensorEntityDescription = (  # type: ignore[attr-defined]
     MockSensorEntityDescription
@@ -107,10 +131,12 @@ ha_core_mock.callback = lambda x: x  # type: ignore[attr-defined]
 ha_mock.__path__ = []
 ha_components_mock.__path__ = []
 ha_helpers_mock.__path__ = []
+ha_util_mock.__path__ = []
 ha_mock.components = ha_components_mock
 ha_mock.helpers = ha_helpers_mock
 ha_mock.config_entries = ha_config_entries_mock
 ha_mock.core = ha_core_mock
+ha_mock.util = ha_util_mock  # type: ignore[attr-defined]
 ha_components_mock.sensor = ha_components_sensor_mock
 ha_helpers_mock.config_validation = ha_helpers_cv_mock
 ha_helpers_mock.update_coordinator = ha_helpers_update_coordinator_mock
@@ -122,6 +148,7 @@ ha_helpers_update_coordinator_mock.__package__ = (
 )
 ha_components_sensor_mock.__package__ = "homeassistant.components.sensor"
 ha_helpers_cv_mock.__package__ = "homeassistant.helpers.config_validation"
+ha_util_mock.__package__ = "homeassistant.util"
 
 sys.modules.setdefault("homeassistant", ha_mock)
 sys.modules.setdefault("homeassistant.components", ha_components_mock)
@@ -140,6 +167,7 @@ sys.modules.setdefault(
 sys.modules.setdefault("homeassistant.helpers.event", ha_helpers_event_mock)
 sys.modules.setdefault("homeassistant.config_entries", ha_config_entries_mock)
 sys.modules.setdefault("homeassistant.core", ha_core_mock)
+sys.modules.setdefault("homeassistant.util", ha_util_mock)
 
 # Ensure required attributes exist in already-loaded modules (from other test files)
 if not hasattr(sys.modules["homeassistant.core"], "callback"):
