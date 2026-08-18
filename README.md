@@ -40,7 +40,7 @@ The authors and contributors accept **NO RESPONSIBILITY** for:
 
   ![alt text](images/device_and_services.png)
 
-  These sensors are numerical sensors representing the current pollen count returned by the API on a scale from 0 to 4.
+  The pollen type sensors are numerical sensors representing the current pollen count returned by the API on a scale from 0 to 4. The allergy risk sensors are also numerical with a scale from 0 to 9.
 
 * These Polleninformation.at integration sensors show the current pollen count. Pollen count predictions are not exposed, although the API offers such data.
 
