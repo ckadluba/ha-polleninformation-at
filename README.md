@@ -19,10 +19,13 @@ The authors and contributors accept **NO RESPONSIBILITY** for:
 
 1. Request an API key from [https://www.polleninformation.at/datenschnittstelle/api-key-anfordern](https://www.polleninformation.at/datenschnittstelle/api-key-anfordern).
 
-1. Search for the "Polleninformation.at" integration in the HACS store in Home Assistant and install it.
+1. Search for the "Polleninformation.at" integration in the HACS store in Home Assistant and install it or use the following button.
 
-1. Under Settings > Devices and Services, select Add Integration, then search for and add the "Polleninformation.at" integration.
-   ![Adding the Polleninformation.at integration](images/add_integration.png)
+   [![](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ckadluba&repository=ha-polleninformation-at&category=Integration)
+
+1. Under Settings > Devices and Services, select Add Integration, then search for and add the "Polleninformation.at" integration or use the following button.
+
+   [![](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=polleninformation_at)
 
 1. A configuration dialog opens where you must enter the API key.
    ![Configuration dialog to enter API key](images/configuration_dialog.png)

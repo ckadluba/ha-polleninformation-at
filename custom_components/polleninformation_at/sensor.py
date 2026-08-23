@@ -44,6 +44,37 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+class SensorAttributesMixin:
+    """Provide common entity metadata for pollen sensors."""
+
+    def _initialize_sensor_attributes(self, name_suffix: str, icon: str) -> None:
+        """Initialize the common entity attributes for a pollen sensor."""
+        canonical_entity_name = f"{DOMAIN}_{name_suffix}"
+        self._attr_has_entity_name = True
+        self._attr_unique_id = canonical_entity_name
+        self._attr_icon = icon
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_native_unit_of_measurement = "level"
+
+        # Ensure canonical entity_id independent of friendly name
+        self.entity_id = f"sensor.{canonical_entity_name}"
+
+        self.entity_description = SensorEntityDescription(
+            key=canonical_entity_name,
+            translation_key=canonical_entity_name,
+            icon=icon,
+            native_unit_of_measurement="level",
+            state_class=SensorStateClass.MEASUREMENT,
+        )
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, "polleninformation_at")},
+            name=INTEGRATION_NAME,
+            manufacturer=INTEGRATION_DEVICE_MANUFACTURER,
+            entry_type=DeviceEntryType.SERVICE,
+        )
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
@@ -53,7 +84,7 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     # Setup pollen sensors for each pollen type defined in POLLEN_TYPES
-    sensors: list[CoordinatorSensor] = [
+    sensors: list[SensorEntity] = [
         PollenSensor(coordinator, pollen_type, item["pollen_id"])
         for pollen_type, item in POLLEN_TYPES.items()
     ]
@@ -69,7 +100,7 @@ async def async_setup_entry(
     async_add_entities(sensors)
 
 
-class CoordinatorSensor(CoordinatorEntity, SensorEntity):
+class CoordinatorSensor(SensorAttributesMixin, CoordinatorEntity, SensorEntity):
     """
     Coordinator-backed sensor base class for contamination data.
 
@@ -97,30 +128,7 @@ class CoordinatorSensor(CoordinatorEntity, SensorEntity):
         self.data_extractor = data_extractor
         self.name_suffix = name_suffix
 
-        canonical_entity_name = f"{DOMAIN}_{name_suffix}"
-        self._attr_has_entity_name = True
-        self._attr_unique_id = canonical_entity_name
-        self._attr_icon = icon
-        self._attr_state_class = SensorStateClass.MEASUREMENT
-        self._attr_native_unit_of_measurement = "level"
-
-        # Ensure canonical entity_id independent of friendly name
-        self.entity_id = f"sensor.{canonical_entity_name}"
-
-        self.entity_description = SensorEntityDescription(
-            key=canonical_entity_name,
-            translation_key=canonical_entity_name,
-            icon=ICON_FLOWER_POLLEN,
-            native_unit_of_measurement="level",
-            state_class=SensorStateClass.MEASUREMENT,
-        )
-
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, "polleninformation_at")},
-            name=INTEGRATION_NAME,
-            manufacturer=INTEGRATION_DEVICE_MANUFACTURER,
-            entry_type=DeviceEntryType.SERVICE,
-        )
+        self._initialize_sensor_attributes(name_suffix, icon)
 
         _LOGGER.debug(
             ("CoordinatorSensor initialized with _attr_unique_id: %s, name_suffix: %s"),
@@ -260,7 +268,7 @@ class AllergyriskDataExtractor(DataExtractor):
             return contamination
 
         _LOGGER.error(
-            "AllergyriskHourlyDataExtractor element %s not found in data: %s",
+            "AllergyriskDataExtractor element %s not found in data: %s",
             ALLERGYRISK_JSON_ELEMENT_NAME,
             response,
         )
@@ -360,26 +368,39 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
         return None
 
 
-class AllergyriskHourlySensor(CoordinatorSensor):
+class AllergyriskHourlySensor(SensorAttributesMixin, SensorEntity):
     """
     Sensor for the overall current hour allergyrisk level.
+
+    Does not use the CoordinatorEntity base class because it needs to update
+    at the beginning of every hour but not when the coordinator updates.
+    The coordinator is still used to fetch the data, but the sensor updates
+    its state at the beginning of every hour.
 
     param coordinator: The data update coordinator for this integration.
     """
 
     def __init__(self, coordinator) -> None:  # noqa: ANN001
         """Initialize the sensor entity."""
-        super().__init__(
-            coordinator,
-            AllergyriskHourlyDataExtractor(coordinator),
-            ALLERGYRISK_HOURLY_TYPE,
-            ICON_MEDICAL_BAG,
-        )
+        super().__init__()
+        self.data_extractor = AllergyriskHourlyDataExtractor(coordinator)
+        self.name_suffix = ALLERGYRISK_HOURLY_TYPE
+        self._initialize_sensor_attributes(ALLERGYRISK_HOURLY_TYPE, ICON_MEDICAL_BAG)
 
         _LOGGER.debug(
             ("AllergyriskSensor initialized with _attr_unique_id: %s"),
             self._attr_unique_id,
         )
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the current contamination level."""
+        return self.data_extractor.get_native_value()
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return additional sensor attributes."""
+        return self.data_extractor.get_extra_state_attributes()
 
     async def async_added_to_hass(self) -> None:
         """Set up the hourly update listener."""
