@@ -588,6 +588,15 @@ class TestAllergyriskHourlySensorLogic(unittest.TestCase):
             self.sensor_module.AllergyriskHourlyDataExtractor,
         )
 
+    def test_does_not_subscribe_to_coordinator_updates(self) -> None:
+        coordinator = MagicMock()
+        coordinator.data = {}
+
+        sensor = self.AllergyriskHourlySensor(coordinator)
+
+        self.assertNotIsInstance(sensor, self.sensor_module.CoordinatorEntity)
+        coordinator.async_add_listener.assert_not_called()
+
 
 class TestAsyncSetupEntry(unittest.IsolatedAsyncioTestCase):
     @classmethod
