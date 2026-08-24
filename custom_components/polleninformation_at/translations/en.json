@@ -55,11 +55,191 @@
             "polleninformation_at_cupressaceae": {
                 "name": "Cypress family (Cupressaceae)"
             },
+            "polleninformation_at_poaceae_forecast1": {
+                "name": "Grasses (Poaceae) tomorrow"
+            },
+            "polleninformation_at_urticaceae_forecast1": {
+                "name": "Nettle and pellitory (Urticaceae) tomorrow"
+            },
+            "polleninformation_at_alternaria_forecast1": {
+                "name": "Fungal spores (Alternaria) tomorrow"
+            },
+            "polleninformation_at_rumex_forecast1": {
+                "name": "Dock (Rumex) tomorrow"
+            },
+            "polleninformation_at_castanea_forecast1": {
+                "name": "Sweet chestnut (Castanea) tomorrow"
+            },
+            "polleninformation_at_plantago_forecast1": {
+                "name": "Plantain (Plantago) tomorrow"
+            },
+            "polleninformation_at_artemisia_forecast1": {
+                "name": "Mugwort (Artemisia) tomorrow"
+            },
+            "polleninformation_at_betula_forecast1": {
+                "name": "Birch (Betula) tomorrow"
+            },
+            "polleninformation_at_alnus_forecast1": {
+                "name": "Alder (Alnus) tomorrow"
+            },
+            "polleninformation_at_fraxinus_forecast1": {
+                "name": "Ash (Fraxinus) tomorrow"
+            },
+            "polleninformation_at_ailanthus_altissima_forecast1": {
+                "name": "Tree of heaven (Ailanthus altissima) tomorrow"
+            },
+            "polleninformation_at_corylus_forecast1": {
+                "name": "Hazel (Corylus) tomorrow"
+            },
+            "polleninformation_at_tilia_forecast1": {
+                "name": "Linden (Tilia) tomorrow"
+            },
+            "polleninformation_at_olea_forecast1": {
+                "name": "Olive tree (Olea) tomorrow"
+            },
+            "polleninformation_at_platanus_forecast1": {
+                "name": "Plane tree (Platanus) tomorrow"
+            },
+            "polleninformation_at_ambrosia_forecast1": {
+                "name": "Ragweed (Ambrosia) tomorrow"
+            },
+            "polleninformation_at_secale_forecast1": {
+                "name": "Rye (Secale) tomorrow"
+            },
+            "polleninformation_at_cupressaceae_forecast1": {
+                "name": "Cypress family (Cupressaceae) tomorrow"
+            },
+            "polleninformation_at_poaceae_forecast2": {
+                "name": "Grasses (Poaceae) 2 days ahead"
+            },
+            "polleninformation_at_urticaceae_forecast2": {
+                "name": "Nettle and pellitory (Urticaceae) 2 days ahead"
+            },
+            "polleninformation_at_alternaria_forecast2": {
+                "name": "Fungal spores (Alternaria) 2 days ahead"
+            },
+            "polleninformation_at_rumex_forecast2": {
+                "name": "Dock (Rumex) 2 days ahead"
+            },
+            "polleninformation_at_castanea_forecast2": {
+                "name": "Sweet chestnut (Castanea) 2 days ahead"
+            },
+            "polleninformation_at_plantago_forecast2": {
+                "name": "Plantain (Plantago) 2 days ahead"
+            },
+            "polleninformation_at_artemisia_forecast2": {
+                "name": "Mugwort (Artemisia) 2 days ahead"
+            },
+            "polleninformation_at_betula_forecast2": {
+                "name": "Birch (Betula) 2 days ahead"
+            },
+            "polleninformation_at_alnus_forecast2": {
+                "name": "Alder (Alnus) 2 days ahead"
+            },
+            "polleninformation_at_fraxinus_forecast2": {
+                "name": "Ash (Fraxinus) 2 days ahead"
+            },
+            "polleninformation_at_ailanthus_altissima_forecast2": {
+                "name": "Tree of heaven (Ailanthus altissima) 2 days ahead"
+            },
+            "polleninformation_at_corylus_forecast2": {
+                "name": "Hazel (Corylus) 2 days ahead"
+            },
+            "polleninformation_at_tilia_forecast2": {
+                "name": "Linden (Tilia) 2 days ahead"
+            },
+            "polleninformation_at_olea_forecast2": {
+                "name": "Olive tree (Olea) 2 days ahead"
+            },
+            "polleninformation_at_platanus_forecast2": {
+                "name": "Plane tree (Platanus) 2 days ahead"
+            },
+            "polleninformation_at_ambrosia_forecast2": {
+                "name": "Ragweed (Ambrosia) 2 days ahead"
+            },
+            "polleninformation_at_secale_forecast2": {
+                "name": "Rye (Secale) 2 days ahead"
+            },
+            "polleninformation_at_cupressaceae_forecast2": {
+                "name": "Cypress family (Cupressaceae) 2 days ahead"
+            },
+            "polleninformation_at_poaceae_forecast3": {
+                "name": "Grasses (Poaceae) 3 days ahead"
+            },
+            "polleninformation_at_urticaceae_forecast3": {
+                "name": "Nettle and pellitory (Urticaceae) 3 days ahead"
+            },
+            "polleninformation_at_alternaria_forecast3": {
+                "name": "Fungal spores (Alternaria) 3 days ahead"
+            },
+            "polleninformation_at_rumex_forecast3": {
+                "name": "Dock (Rumex) 3 days ahead"
+            },
+            "polleninformation_at_castanea_forecast3": {
+                "name": "Sweet chestnut (Castanea) 3 days ahead"
+            },
+            "polleninformation_at_plantago_forecast3": {
+                "name": "Plantain (Plantago) 3 days ahead"
+            },
+            "polleninformation_at_artemisia_forecast3": {
+                "name": "Mugwort (Artemisia) 3 days ahead"
+            },
+            "polleninformation_at_betula_forecast3": {
+                "name": "Birch (Betula) 3 days ahead"
+            },
+            "polleninformation_at_alnus_forecast3": {
+                "name": "Alder (Alnus) 3 days ahead"
+            },
+            "polleninformation_at_fraxinus_forecast3": {
+                "name": "Ash (Fraxinus) 3 days ahead"
+            },
+            "polleninformation_at_ailanthus_altissima_forecast3": {
+                "name": "Tree of heaven (Ailanthus altissima) 3 days ahead"
+            },
+            "polleninformation_at_corylus_forecast3": {
+                "name": "Hazel (Corylus) 3 days ahead"
+            },
+            "polleninformation_at_tilia_forecast3": {
+                "name": "Linden (Tilia) 3 days ahead"
+            },
+            "polleninformation_at_olea_forecast3": {
+                "name": "Olive tree (Olea) 3 days ahead"
+            },
+            "polleninformation_at_platanus_forecast3": {
+                "name": "Plane tree (Platanus) 3 days ahead"
+            },
+            "polleninformation_at_ambrosia_forecast3": {
+                "name": "Ragweed (Ambrosia) 3 days ahead"
+            },
+            "polleninformation_at_secale_forecast3": {
+                "name": "Rye (Secale) 3 days ahead"
+            },
+            "polleninformation_at_cupressaceae_forecast3": {
+                "name": "Cypress family (Cupressaceae) 3 days ahead"
+            },
             "polleninformation_at_allergyrisk": {
                 "name": "Allergy risk"
             },
+            "polleninformation_at_allergyrisk_forecast1": {
+                "name": "Allergy risk tomorrow"
+            },
+            "polleninformation_at_allergyrisk_forecast2": {
+                "name": "Allergy risk 2 days ahead"
+            },
+            "polleninformation_at_allergyrisk_forecast3": {
+                "name": "Allergy risk 3 days ahead"
+            },
             "polleninformation_at_allergyrisk_hourly": {
                 "name": "Allergy risk (hourly)"
+            },
+            "polleninformation_at_allergyrisk_hourly_forecast1": {
+                "name": "Allergy risk (hourly) tomorrow"
+            },
+            "polleninformation_at_allergyrisk_hourly_forecast2": {
+                "name": "Allergy risk (hourly) 2 days ahead"
+            },
+            "polleninformation_at_allergyrisk_hourly_forecast3": {
+                "name": "Allergy risk (hourly) 3 days ahead"
             }
         }
     }

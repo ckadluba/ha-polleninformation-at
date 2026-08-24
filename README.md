@@ -43,9 +43,42 @@ The authors and contributors accept **NO RESPONSIBILITY** for:
 
   ![alt text](images/device_and_services.png)
 
-  The pollen type sensors are numerical sensors representing the current pollen count returned by the API on a scale from 0 to 4. The allergy risk sensors are also numerical with a scale from 0 to 9.
+### Sensor Entities
 
-* These Polleninformation.at integration sensors show the current pollen count. Pollen count predictions are not exposed, although the API offers such data.
+The following sensor entites are showing the current contamination and allergy risk values.
+
+| Sensor Entity Name                    | Purpose                                    | Range | Entity Unique ID                         |
+|---------------------------------------|--------------------------------------------|-------|------------------------------------------|
+| Grasses (Poaceae)                    | Current Poaceae pollen contamination       | 0-4   | polleninformation_at_poaceae             |
+| Nettle and pellitory (Urticaceae)    | Current Urticaceae pollen contamination    | 0-4   | polleninformation_at_urticaceae          |
+| Fungal spores (Alternaria)           | Current Alternaria pollen contamination    | 0-4   | polleninformation_at_alternaria          |
+| Dock (Rumex)                         | Current Rumex pollen contamination         | 0-4   | polleninformation_at_rumex               |
+| Sweet chestnut (Castanea)            | Current Castanea pollen contamination      | 0-4   | polleninformation_at_castanea            |
+| Plantain (Plantago)                  | Current Plantago pollen contamination      | 0-4   | polleninformation_at_plantago            |
+| Mugwort (Artemisia)                  | Current Artemisia pollen contamination     | 0-4   | polleninformation_at_artemisia           |
+| Birch (Betula)                       | Current Betula pollen contamination        | 0-4   | polleninformation_at_betula              |
+| Alder (Alnus)                        | Current Alnus pollen contamination         | 0-4   | polleninformation_at_alnus               |
+| Ash (Fraxinus)                       | Current Fraxinus pollen contamination      | 0-4   | polleninformation_at_fraxinus            |
+| Tree of heaven (Ailanthus altissima) | Current Ailanthus altissima pollen contamination | 0-4 | polleninformation_at_ailanthus_altissima |
+| Hazel (Corylus)                      | Current Corylus pollen contamination       | 0-4   | polleninformation_at_corylus             |
+| Linden (Tilia)                       | Current Tilia pollen contamination         | 0-4   | polleninformation_at_tilia               |
+| Olive tree (Olea)                    | Current Olea pollen contamination          | 0-4   | polleninformation_at_olea                |
+| Plane tree (Platanus)                | Current Platanus pollen contamination      | 0-4   | polleninformation_at_platanus            |
+| Ragweed (Ambrosia)                   | Current Ambrosia pollen contamination      | 0-4   | polleninformation_at_ambrosia            |
+| Rye (Secale)                         | Current Secale pollen contamination        | 0-4   | polleninformation_at_secale              |
+| Cypress (Cupressaceae)               | Current Cupressaceae pollen contamination  | 0-4   | polleninformation_at_cupressaceae        |
+| Allergy risk                         | Current overall allergy risk               | 0-10  | polleninformation_at_allergyrisk         |
+| Allergy risk (hourly)                | Current hour overall allergy risk          | 0-10  | polleninformation_at_allergyrisk_hourly  |
+
+For each of the sensor entities in the table, there are forecast versions too. They show the same data as the respective current sensors but for the future and have suffixes as shown in the follwing table.
+
+| Entity Unique ID Suffix | Purpose                          |
+|-------------------------|----------------------------------|
+| _forecast1              | Forecast data for tomorrow       |
+| _forecast2              | Forecast data two days ahead     |
+| _forecast3              | Forecast data three days ahead   |
+
+So for instance the sensor entity `polleninformation_at_poaceae_forecast1` shows the Poaceae pollen contamination for tomorrow and `polleninformation_at_allergyrisk_hourly_forecast3` shows the hourly overall allergy risk in three days.
 
 ## Development
 

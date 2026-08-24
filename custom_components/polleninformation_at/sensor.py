@@ -21,15 +21,30 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
 from custom_components.polleninformation_at.const import (
+    ALLERGYRISK_CURRENT_JSON_SUBELEMENT_NAME,
+    ALLERGYRISK_FORECAST1_JSON_SUBELEMENT_NAME,
+    ALLERGYRISK_FORECAST2_JSON_SUBELEMENT_NAME,
+    ALLERGYRISK_FORECAST3_JSON_SUBELEMENT_NAME,
+    ALLERGYRISK_HOURLY_CURRENT_JSON_SUBELEMENT_NAME,
+    ALLERGYRISK_HOURLY_FORECAST1_JSON_SUBELEMENT_NAME,
+    ALLERGYRISK_HOURLY_FORECAST2_JSON_SUBELEMENT_NAME,
+    ALLERGYRISK_HOURLY_FORECAST3_JSON_SUBELEMENT_NAME,
     ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME,
     ALLERGYRISK_HOURLY_TYPE,
     ALLERGYRISK_JSON_ELEMENT_NAME,
     ALLERGYRISK_TYPE,
     DOMAIN,
+    FORECAST1_SUFFIX,
+    FORECAST2_SUFFIX,
+    FORECAST3_SUFFIX,
     ICON_FLOWER_POLLEN,
     ICON_MEDICAL_BAG,
     INTEGRATION_DEVICE_MANUFACTURER,
     INTEGRATION_NAME,
+    POLLEN_CURRENT_JSON_SUBELEMENT_NAME,
+    POLLEN_FORECAST1_JSON_SUBELEMENT_NAME,
+    POLLEN_FORECAST2_JSON_SUBELEMENT_NAME,
+    POLLEN_FORECAST3_JSON_SUBELEMENT_NAME,
     POLLEN_JSON_ELEMENT_NAME,
     POLLEN_TYPES,
 )
@@ -44,12 +59,111 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up Polleninformation.at sensors for a config entry."""
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]
+
+    # Setup pollen sensors for each pollen type defined in POLLEN_TYPES
+    sensors: list[SensorEntity] = [
+        sensor
+        for pollen_type, item in POLLEN_TYPES.items()
+        for sensor in (
+            PollenSensor(
+                coordinator=coordinator,
+                pollen_name=pollen_type,
+                pollen_id=item["pollen_id"],
+            ),
+            PollenSensor(
+                coordinator=coordinator,
+                pollen_name=pollen_type,
+                pollen_id=item["pollen_id"],
+                forecast_suffix=FORECAST1_SUFFIX,
+                json_subelement_name=POLLEN_FORECAST1_JSON_SUBELEMENT_NAME,
+            ),
+            PollenSensor(
+                coordinator=coordinator,
+                pollen_name=pollen_type,
+                pollen_id=item["pollen_id"],
+                forecast_suffix=FORECAST2_SUFFIX,
+                json_subelement_name=POLLEN_FORECAST2_JSON_SUBELEMENT_NAME,
+            ),
+            PollenSensor(
+                coordinator=coordinator,
+                pollen_name=pollen_type,
+                pollen_id=item["pollen_id"],
+                forecast_suffix=FORECAST3_SUFFIX,
+                json_subelement_name=POLLEN_FORECAST3_JSON_SUBELEMENT_NAME,
+            ),
+        )
+    ]
+
+    # Setup sensors for allergy risk
+    sensors.append(AllergyriskSensor(coordinator))
+    sensors.append(
+        AllergyriskSensor(
+            coordinator=coordinator,
+            forecast_suffix=FORECAST1_SUFFIX,
+            json_subelement_name=ALLERGYRISK_FORECAST1_JSON_SUBELEMENT_NAME,
+        )
+    )
+    sensors.append(
+        AllergyriskSensor(
+            coordinator=coordinator,
+            forecast_suffix=FORECAST2_SUFFIX,
+            json_subelement_name=ALLERGYRISK_FORECAST2_JSON_SUBELEMENT_NAME,
+        )
+    )
+    sensors.append(
+        AllergyriskSensor(
+            coordinator=coordinator,
+            forecast_suffix=FORECAST3_SUFFIX,
+            json_subelement_name=ALLERGYRISK_FORECAST3_JSON_SUBELEMENT_NAME,
+        )
+    )
+
+    # Setup sensors for hourly allergy risk
+    sensors.append(AllergyriskHourlySensor(coordinator))
+    sensors.append(
+        AllergyriskHourlySensor(
+            coordinator=coordinator,
+            forecast_suffix=FORECAST1_SUFFIX,
+            json_subelement_name=ALLERGYRISK_HOURLY_FORECAST1_JSON_SUBELEMENT_NAME,
+        )
+    )
+    sensors.append(
+        AllergyriskHourlySensor(
+            coordinator=coordinator,
+            forecast_suffix=FORECAST2_SUFFIX,
+            json_subelement_name=ALLERGYRISK_HOURLY_FORECAST2_JSON_SUBELEMENT_NAME,
+        )
+    )
+    sensors.append(
+        AllergyriskHourlySensor(
+            coordinator=coordinator,
+            forecast_suffix=FORECAST3_SUFFIX,
+            json_subelement_name=ALLERGYRISK_HOURLY_FORECAST3_JSON_SUBELEMENT_NAME,
+        )
+    )
+
+    _LOGGER.debug("Setting up sensor entities: %s", sensors)
+
+    async_add_entities(sensors)
+
+
 class SensorAttributesMixin:
     """Provide common entity metadata for pollen sensors."""
 
-    def _initialize_sensor_attributes(self, name_suffix: str, icon: str) -> None:
+    def _initialize_sensor_attributes(
+        self, name_suffix: str, forecast_suffix: str, icon: str
+    ) -> None:
         """Initialize the common entity attributes for a pollen sensor."""
         canonical_entity_name = f"{DOMAIN}_{name_suffix}"
+        if forecast_suffix:
+            canonical_entity_name += f"_{forecast_suffix}"
         self._attr_has_entity_name = True
         self._attr_unique_id = canonical_entity_name
         self._attr_icon = icon
@@ -75,31 +189,6 @@ class SensorAttributesMixin:
         )
 
 
-async def async_setup_entry(
-    hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
-) -> None:
-    """Set up Polleninformation.at sensors for a config entry."""
-    coordinator = hass.data[DOMAIN][config_entry.entry_id]
-
-    # Setup pollen sensors for each pollen type defined in POLLEN_TYPES
-    sensors: list[SensorEntity] = [
-        PollenSensor(coordinator, pollen_type, item["pollen_id"])
-        for pollen_type, item in POLLEN_TYPES.items()
-    ]
-
-    # Setup sensor for allergyrisk
-    sensors.append(AllergyriskSensor(coordinator))
-
-    # Setup sensor for hourly allergyrisk
-    sensors.append(AllergyriskHourlySensor(coordinator))
-
-    _LOGGER.debug("Setting up sensor entities: %s", sensors)
-
-    async_add_entities(sensors)
-
-
 class CoordinatorSensor(SensorAttributesMixin, CoordinatorEntity, SensorEntity):
     """
     Coordinator-backed sensor base class for contamination data.
@@ -112,6 +201,7 @@ class CoordinatorSensor(SensorAttributesMixin, CoordinatorEntity, SensorEntity):
     param data_extractor: An instance of a DataExtractor subclass to extract the
         relevant contamination data from the coordinator's response.
     param name_suffix: The suffix for the sensor name (e.g., "poaceae", "allergyrisk").
+    param forecast_suffix: The suffix for the forecast sensor name (e.g., "forecast1").
     param icon: The icon for the sensor entity (default is ICON_FLOWER_POLLEN)
     """
 
@@ -120,20 +210,23 @@ class CoordinatorSensor(SensorAttributesMixin, CoordinatorEntity, SensorEntity):
         coordinator,  # noqa: ANN001
         data_extractor: DataExtractor,
         name_suffix: str,
-        icon: str = ICON_FLOWER_POLLEN,
+        forecast_suffix: str,
+        icon: str,
     ) -> None:
         """Initialize the sensor entity."""
         super().__init__(coordinator)
 
         self.data_extractor = data_extractor
-        self.name_suffix = name_suffix
-
-        self._initialize_sensor_attributes(name_suffix, icon)
+        self._initialize_sensor_attributes(name_suffix, forecast_suffix, icon)
 
         _LOGGER.debug(
-            ("CoordinatorSensor initialized with _attr_unique_id: %s, name_suffix: %s"),
+            (
+                "CoordinatorSensor initialized with _attr_unique_id: %s"
+                ", name_suffix: %s, forecast_suffix: %s"
+            ),
             self._attr_unique_id,
-            self.name_suffix,
+            name_suffix,
+            forecast_suffix,
         )
 
     @property
@@ -150,9 +243,10 @@ class CoordinatorSensor(SensorAttributesMixin, CoordinatorEntity, SensorEntity):
 class DataExtractor:
     """Mixin base class to extract contamination data from the coordinator response."""
 
-    def __init__(self, coordinator) -> None:  # noqa: ANN001
+    def __init__(self, coordinator, json_subelement_name: str) -> None:  # noqa: ANN001
         """Initialize the data extractor."""
         self.coordinator = coordinator
+        self.json_subelement_name = json_subelement_name
 
     @abstractmethod
     def get_native_value(self) -> int | None:
@@ -171,15 +265,20 @@ class PollenDataExtractor(DataExtractor):
     param pollen_id: The numeric ID for the pollen type according to the API response.
     """
 
-    def __init__(self, coordinator, pollen_id: int) -> None:  # noqa: ANN001
+    def __init__(
+        self,
+        coordinator,  # noqa: ANN001
+        pollen_id: int,
+        json_subelement_name: str,
+    ) -> None:
         """Initialize the data extractor."""
-        self.coordinator = coordinator
+        super().__init__(coordinator, json_subelement_name)
         self._pollen_id = pollen_id
 
     def get_native_value(self) -> int | None:
         """Return the current contamination level for the given element name."""
         data = self._get_contamination_entry()
-        return data.get(f"{POLLEN_JSON_ELEMENT_NAME}_1") if data else None
+        return data.get(self.json_subelement_name) if data else None
 
     def get_extra_state_attributes(self) -> dict:
         """Return additional sensor attributes."""
@@ -216,12 +315,25 @@ class PollenSensor(CoordinatorSensor):
     param coordinator: The data update coordinator for this integration.
     param pollen_name: The name of the pollen type (e.g., "Poaceae", "Betula").
     param pollen_id: The numeric ID for the pollen type according to the API response.
+    param json_subelement_name: The JSON subelement name for the pollen type in the
+        API response (e.g., "contamination_1", "contamination_2").
     """
 
-    def __init__(self, coordinator, pollen_name: str, pollen_id: int) -> None:  # noqa: ANN001
+    def __init__(
+        self,
+        coordinator,  # noqa: ANN001
+        pollen_name: str,
+        pollen_id: int,
+        forecast_suffix: str = "",
+        json_subelement_name: str = POLLEN_CURRENT_JSON_SUBELEMENT_NAME,
+    ) -> None:
         """Initialize the sensor entity."""
         super().__init__(
-            coordinator, PollenDataExtractor(coordinator, pollen_id), pollen_name
+            coordinator,
+            PollenDataExtractor(coordinator, pollen_id, json_subelement_name),
+            pollen_name,
+            forecast_suffix,
+            ICON_FLOWER_POLLEN,
         )
 
         self._pollen_id = pollen_id
@@ -244,14 +356,14 @@ class AllergyriskDataExtractor(DataExtractor):
     param coordinator: The data update coordinator for this integration.
     """
 
-    def __init__(self, coordinator) -> None:  # noqa: ANN001
+    def __init__(self, coordinator, json_subelement_name: str) -> None:  # noqa: ANN001
         """Initialize the data extractor."""
-        self.coordinator = coordinator
+        super().__init__(coordinator, json_subelement_name)
 
     def get_native_value(self) -> int | None:
         """Return the current allergyrisk level for the given element name."""
         data = self._get_contamination_entry()
-        return data.get(f"{ALLERGYRISK_JSON_ELEMENT_NAME}_1") if data else None
+        return data.get(self.json_subelement_name) if data else None
 
     def get_extra_state_attributes(self) -> dict:
         """Return additional sensor attributes."""
@@ -282,12 +394,18 @@ class AllergyriskSensor(CoordinatorSensor):
     param coordinator: The data update coordinator for this integration.
     """
 
-    def __init__(self, coordinator) -> None:  # noqa: ANN001
+    def __init__(
+        self,
+        coordinator,  # noqa: ANN001
+        forecast_suffix: str = "",
+        json_subelement_name: str = ALLERGYRISK_CURRENT_JSON_SUBELEMENT_NAME,
+    ) -> None:
         """Initialize the sensor entity."""
         super().__init__(
             coordinator,
-            AllergyriskDataExtractor(coordinator),
+            AllergyriskDataExtractor(coordinator, json_subelement_name),
             ALLERGYRISK_TYPE,
+            forecast_suffix,
             ICON_MEDICAL_BAG,
         )
 
@@ -304,9 +422,10 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
     param coordinator: The data update coordinator for this integration.
     """
 
-    def __init__(self, coordinator) -> None:  # noqa: ANN001
+    def __init__(self, coordinator, json_subelement_name: str) -> None:  # noqa: ANN001
         """Initialize the data extractor."""
         self.coordinator = coordinator
+        self.json_subelement_name = json_subelement_name
 
     def get_native_value(self) -> int | None:
         """Return the current hour allergyrisk level for the given element name."""
@@ -314,11 +433,11 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
         if data is None:
             return None
 
-        element = data.get(f"{ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME}_1")
+        element = data.get(self.json_subelement_name)
         if element is None:
             _LOGGER.error(
                 "AllergyriskHourlyDataExtractor element %s not found in data: %s",
-                ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME,
+                self.json_subelement_name,
                 data,
             )
             return None
@@ -380,12 +499,21 @@ class AllergyriskHourlySensor(SensorAttributesMixin, SensorEntity):
     param coordinator: The data update coordinator for this integration.
     """
 
-    def __init__(self, coordinator) -> None:  # noqa: ANN001
+    def __init__(
+        self,
+        coordinator,  # noqa: ANN001
+        forecast_suffix: str = "",
+        json_subelement_name: str = ALLERGYRISK_HOURLY_CURRENT_JSON_SUBELEMENT_NAME,
+    ) -> None:
         """Initialize the sensor entity."""
         super().__init__()
-        self.data_extractor = AllergyriskHourlyDataExtractor(coordinator)
+        self.data_extractor = AllergyriskHourlyDataExtractor(
+            coordinator, json_subelement_name
+        )
         self.name_suffix = ALLERGYRISK_HOURLY_TYPE
-        self._initialize_sensor_attributes(ALLERGYRISK_HOURLY_TYPE, ICON_MEDICAL_BAG)
+        self._initialize_sensor_attributes(
+            ALLERGYRISK_HOURLY_TYPE, forecast_suffix, ICON_MEDICAL_BAG
+        )
 
         _LOGGER.debug(
             ("AllergyriskSensor initialized with _attr_unique_id: %s"),

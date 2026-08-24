@@ -55,11 +55,191 @@
             "polleninformation_at_cupressaceae": {
                 "name": "Zypressengewächse (Cupressaceae)"
             },
+            "polleninformation_at_poaceae_forecast1": {
+                "name": "Gräser (Poaceae) morgen"
+            },
+            "polleninformation_at_urticaceae_forecast1": {
+                "name": "Nessel- und Glaskraut (Urticaceae) morgen"
+            },
+            "polleninformation_at_alternaria_forecast1": {
+                "name": "Pilzsporen (Alternaria) morgen"
+            },
+            "polleninformation_at_rumex_forecast1": {
+                "name": "Ampfer (Rumex) morgen"
+            },
+            "polleninformation_at_castanea_forecast1": {
+                "name": "Edelkastanie (Castanea) morgen"
+            },
+            "polleninformation_at_plantago_forecast1": {
+                "name": "Wegerichgewächse (Plantago) morgen"
+            },
+            "polleninformation_at_artemisia_forecast1": {
+                "name": "Beifuß (Artemisia) morgen"
+            },
+            "polleninformation_at_betula_forecast1": {
+                "name": "Birke (Betula) morgen"
+            },
+            "polleninformation_at_alnus_forecast1": {
+                "name": "Erle (Alnus) morgen"
+            },
+            "polleninformation_at_fraxinus_forecast1": {
+                "name": "Esche (Fraxinus) morgen"
+            },
+            "polleninformation_at_ailanthus_altissima_forecast1": {
+                "name": "Götterbaum (Ailanthus altissima) morgen"
+            },
+            "polleninformation_at_corylus_forecast1": {
+                "name": "Hasel (Corylus) morgen"
+            },
+            "polleninformation_at_tilia_forecast1": {
+                "name": "Linde (Tilia) morgen"
+            },
+            "polleninformation_at_olea_forecast1": {
+                "name": "Ölbaum (Olea) morgen"
+            },
+            "polleninformation_at_platanus_forecast1": {
+                "name": "Platane (Platanus) morgen"
+            },
+            "polleninformation_at_ambrosia_forecast1": {
+                "name": "Ragweed (Ambrosia) morgen"
+            },
+            "polleninformation_at_secale_forecast1": {
+                "name": "Roggen (Secale) morgen"
+            },
+            "polleninformation_at_cupressaceae_forecast1": {
+                "name": "Zypressengewächse (Cupressaceae) morgen"
+            },
+            "polleninformation_at_poaceae_forecast2": {
+                "name": "Gräser (Poaceae) in 2 Tagen"
+            },
+            "polleninformation_at_urticaceae_forecast2": {
+                "name": "Nessel- und Glaskraut (Urticaceae) in 2 Tagen"
+            },
+            "polleninformation_at_alternaria_forecast2": {
+                "name": "Pilzsporen (Alternaria) in 2 Tagen"
+            },
+            "polleninformation_at_rumex_forecast2": {
+                "name": "Ampfer (Rumex) in 2 Tagen"
+            },
+            "polleninformation_at_castanea_forecast2": {
+                "name": "Edelkastanie (Castanea) in 2 Tagen"
+            },
+            "polleninformation_at_plantago_forecast2": {
+                "name": "Wegerichgewächse (Plantago) in 2 Tagen"
+            },
+            "polleninformation_at_artemisia_forecast2": {
+                "name": "Beifuß (Artemisia) in 2 Tagen"
+            },
+            "polleninformation_at_betula_forecast2": {
+                "name": "Birke (Betula) in 2 Tagen"
+            },
+            "polleninformation_at_alnus_forecast2": {
+                "name": "Erle (Alnus) in 2 Tagen"
+            },
+            "polleninformation_at_fraxinus_forecast2": {
+                "name": "Esche (Fraxinus) in 2 Tagen"
+            },
+            "polleninformation_at_ailanthus_altissima_forecast2": {
+                "name": "Götterbaum (Ailanthus altissima) in 2 Tagen"
+            },
+            "polleninformation_at_corylus_forecast2": {
+                "name": "Hasel (Corylus) in 2 Tagen"
+            },
+            "polleninformation_at_tilia_forecast2": {
+                "name": "Linde (Tilia) in 2 Tagen"
+            },
+            "polleninformation_at_olea_forecast2": {
+                "name": "Ölbaum (Olea) in 2 Tagen"
+            },
+            "polleninformation_at_platanus_forecast2": {
+                "name": "Platane (Platanus) in 2 Tagen"
+            },
+            "polleninformation_at_ambrosia_forecast2": {
+                "name": "Ragweed (Ambrosia) in 2 Tagen"
+            },
+            "polleninformation_at_secale_forecast2": {
+                "name": "Roggen (Secale) in 2 Tagen"
+            },
+            "polleninformation_at_cupressaceae_forecast2": {
+                "name": "Zypressengewächse (Cupressaceae) in 2 Tagen"
+            },
+            "polleninformation_at_poaceae_forecast3": {
+                "name": "Gräser (Poaceae) in 3 Tagen"
+            },
+            "polleninformation_at_urticaceae_forecast3": {
+                "name": "Nessel- und Glaskraut (Urticaceae) in 3 Tagen"
+            },
+            "polleninformation_at_alternaria_forecast3": {
+                "name": "Pilzsporen (Alternaria) in 3 Tagen"
+            },
+            "polleninformation_at_rumex_forecast3": {
+                "name": "Ampfer (Rumex) in 3 Tagen"
+            },
+            "polleninformation_at_castanea_forecast3": {
+                "name": "Edelkastanie (Castanea) in 3 Tagen"
+            },
+            "polleninformation_at_plantago_forecast3": {
+                "name": "Wegerichgewächse (Plantago) in 3 Tagen"
+            },
+            "polleninformation_at_artemisia_forecast3": {
+                "name": "Beifuß (Artemisia) in 3 Tagen"
+            },
+            "polleninformation_at_betula_forecast3": {
+                "name": "Birke (Betula) in 3 Tagen"
+            },
+            "polleninformation_at_alnus_forecast3": {
+                "name": "Erle (Alnus) in 3 Tagen"
+            },
+            "polleninformation_at_fraxinus_forecast3": {
+                "name": "Esche (Fraxinus) in 3 Tagen"
+            },
+            "polleninformation_at_ailanthus_altissima_forecast3": {
+                "name": "Götterbaum (Ailanthus altissima) in 3 Tagen"
+            },
+            "polleninformation_at_corylus_forecast3": {
+                "name": "Hasel (Corylus) in 3 Tagen"
+            },
+            "polleninformation_at_tilia_forecast3": {
+                "name": "Linde (Tilia) in 3 Tagen"
+            },
+            "polleninformation_at_olea_forecast3": {
+                "name": "Ölbaum (Olea) in 3 Tagen"
+            },
+            "polleninformation_at_platanus_forecast3": {
+                "name": "Platane (Platanus) in 3 Tagen"
+            },
+            "polleninformation_at_ambrosia_forecast3": {
+                "name": "Ragweed (Ambrosia) in 3 Tagen"
+            },
+            "polleninformation_at_secale_forecast3": {
+                "name": "Roggen (Secale) in 3 Tagen"
+            },
+            "polleninformation_at_cupressaceae_forecast3": {
+                "name": "Zypressengewächse (Cupressaceae) in 3 Tagen"
+            },
             "polleninformation_at_allergyrisk": {
                 "name": "Allergierisiko"
             },
+            "polleninformation_at_allergyrisk_forecast1": {
+                "name": "Allergierisiko morgen"
+            },
+            "polleninformation_at_allergyrisk_forecast2": {
+                "name": "Allergierisiko in 2 Tagen"
+            },
+            "polleninformation_at_allergyrisk_forecast3": {
+                "name": "Allergierisiko in 3 Tagen"
+            },
             "polleninformation_at_allergyrisk_hourly": {
                 "name": "Allergierisiko (stündlich)"
+            },
+            "polleninformation_at_allergyrisk_hourly_forecast1": {
+                "name": "Allergierisiko (stündlich) morgen"
+            },
+            "polleninformation_at_allergyrisk_hourly_forecast2": {
+                "name": "Allergierisiko (stündlich) in 2 Tagen"
+            },
+            "polleninformation_at_allergyrisk_hourly_forecast3": {
+                "name": "Allergierisiko (stündlich) in 3 Tagen"
             }
         }
     }
