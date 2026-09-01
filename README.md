@@ -80,6 +80,8 @@ For each of the sensor entities in the table, there are forecast versions too. T
 
 So for instance the sensor entity `polleninformation_at_poaceae_forecast1` shows the Poaceae pollen contamination for tomorrow and `polleninformation_at_allergyrisk_hourly_forecast3` shows the hourly overall allergy risk in three days.
 
+The `polleninformation_at_allergyrisk_hourly`-forecast sensors also provide values for all hours of the forecast day in an additional state attribute.
+
 ## Development
 
 All development steps and tests are performed inside the Dev Container. This ensures a consistent environment, just like in production.
