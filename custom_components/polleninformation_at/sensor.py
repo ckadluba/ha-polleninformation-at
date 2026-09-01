@@ -426,8 +426,9 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
         current_hour = dt_util.now().hour
         if not isinstance(element, list) or current_hour >= len(element):
             _LOGGER.error(
-                "AllergyriskHourlyDataExtractor element is not a list "
+                "AllergyriskHourlyDataExtractor %s element is not a list "
                 "or current_hour=%d is out of bounds, element=%s",
+                self.json_subelement_name,
                 current_hour,
                 element,
             )
@@ -435,8 +436,9 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
 
         allergyrisk_value = element[current_hour]
         _LOGGER.debug(
-            "AllergyriskHourlyDataExtractor current_hour=%d, "
+            "AllergyriskHourlyDataExtractor %s current_hour=%d, "
             "element=%s, allergyrisk_value: %s",
+            self.json_subelement_name,
             current_hour,
             element,
             allergyrisk_value,
@@ -458,7 +460,8 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
         contamination = response.get(ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME)
         if not isinstance(contamination, dict):
             _LOGGER.error(
-                "AllergyriskHourlyDataExtractor element %s not found in data: %s",
+                "AllergyriskHourlyDataExtractor %s element %s not found in data: %s",
+                self.json_subelement_name,
                 ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME,
                 response,
             )
@@ -467,7 +470,8 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
         element = contamination.get(self.json_subelement_name)
         if element is None:
             _LOGGER.error(
-                "AllergyriskHourlyDataExtractor element %s not found in data: %s",
+                "AllergyriskHourlyDataExtractor %s element %s not found in data: %s",
+                self.json_subelement_name,
                 self.json_subelement_name,
                 contamination,
             )
