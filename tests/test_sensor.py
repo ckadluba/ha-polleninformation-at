@@ -510,7 +510,7 @@ class TestAllergyriskHourlyDataExtractorLogic(unittest.TestCase):
         )
         self.assertIsNone(extractor.get_native_value())
 
-    def test_extra_state_attributes_is_empty(self) -> None:
+    def test_extra_state_attributes_is_full_forecast_subelement(self) -> None:
         coordinator = MagicMock()
         coordinator.data = {
             "allergyrisk_hourly": {"allergyrisk_hourly_1": [1, 2, 3, 4, 5]}
@@ -518,7 +518,10 @@ class TestAllergyriskHourlyDataExtractorLogic(unittest.TestCase):
         extractor = self.AllergyriskHourlyDataExtractor(
             coordinator, "allergyrisk_hourly_1"
         )
-        self.assertEqual(extractor.get_extra_state_attributes(), {})
+        self.assertEqual(
+            extractor.get_extra_state_attributes(),
+            {"allergyrisk_hourly_1": [1, 2, 3, 4, 5]},
+        )
 
 
 class TestAllergyriskHourlySensorLogic(unittest.TestCase):
