@@ -419,24 +419,16 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
 
     def get_native_value(self) -> int | None:
         """Return the current hour allergyrisk level for the given element name."""
-        data = self._get_contamination_entry()
-        if data is None:
-            return None
-
-        element = data.get(self.json_subelement_name)
+        element = self._get_contamination_subelement()
         if element is None:
-            _LOGGER.error(
-                "AllergyriskHourlyDataExtractor element %s not found in data: %s",
-                self.json_subelement_name,
-                data,
-            )
             return None
 
         current_hour = dt_util.now().hour
         if not isinstance(element, list) or current_hour >= len(element):
             _LOGGER.error(
-                "AllergyriskHourlyDataExtractor element is not a list "
+                "AllergyriskHourlyDataExtractor %s element is not a list "
                 "or current_hour=%d is out of bounds, element=%s",
+                self.json_subelement_name,
                 current_hour,
                 element,
             )
@@ -444,8 +436,9 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
 
         allergyrisk_value = element[current_hour]
         _LOGGER.debug(
-            "AllergyriskHourlyDataExtractor current_hour=%d, "
+            "AllergyriskHourlyDataExtractor %s current_hour=%d, "
             "element=%s, allergyrisk_value: %s",
+            self.json_subelement_name,
             current_hour,
             element,
             allergyrisk_value,
@@ -455,24 +448,36 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
 
     def get_extra_state_attributes(self) -> dict:
         """Return additional sensor attributes."""
-        return {}
+        element = self._get_contamination_subelement()
+        return {self.json_subelement_name: element}
 
-    def _get_contamination_entry(self) -> dict | None:
+    def _get_contamination_subelement(self) -> dict | None:
         """Extract the contamination entry for allergyrisk."""
         response = self.coordinator.data
         if not response:
             return None
 
         contamination = response.get(ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME)
-        if isinstance(contamination, dict):
-            return contamination
+        if not isinstance(contamination, dict):
+            _LOGGER.error(
+                "AllergyriskHourlyDataExtractor %s element %s not found in data: %s",
+                self.json_subelement_name,
+                ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME,
+                response,
+            )
+            return None
 
-        _LOGGER.error(
-            "AllergyriskHourlyDataExtractor element %s not found in data: %s",
-            ALLERGYRISK_HOURLY_JSON_ELEMENT_NAME,
-            response,
-        )
-        return None
+        element = contamination.get(self.json_subelement_name)
+        if element is None:
+            _LOGGER.error(
+                "AllergyriskHourlyDataExtractor %s element %s not found in data: %s",
+                self.json_subelement_name,
+                self.json_subelement_name,
+                contamination,
+            )
+            return None
+
+        return element
 
 
 class AllergyriskHourlySensor(SensorAttributesMixin, SensorEntity):
