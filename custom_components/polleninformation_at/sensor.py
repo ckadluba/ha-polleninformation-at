@@ -507,6 +507,7 @@ class AllergyriskHourlySensor(SensorAttributesMixin, SensorEntity):
         self._initialize_sensor_attributes(
             ALLERGYRISK_HOURLY_TYPE, forecast_suffix, ICON_MEDICAL_BAG
         )
+        self._attr_should_poll = False  # No polling, updates done by hourly timer
 
         _LOGGER.debug(
             "AllergyriskHourlySensor initialized with _attr_unique_id: %s",
