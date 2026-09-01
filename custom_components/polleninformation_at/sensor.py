@@ -219,16 +219,6 @@ class CoordinatorSensor(SensorAttributesMixin, CoordinatorEntity, SensorEntity):
         self.data_extractor = data_extractor
         self._initialize_sensor_attributes(name_suffix, forecast_suffix, icon)
 
-        _LOGGER.debug(
-            (
-                "CoordinatorSensor initialized with _attr_unique_id: %s"
-                ", name_suffix: %s, forecast_suffix: %s"
-            ),
-            self._attr_unique_id,
-            name_suffix,
-            forecast_suffix,
-        )
-
     @property
     def native_value(self) -> int | None:
         """Return the current contamination level."""
@@ -443,12 +433,6 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
             return None
 
         current_hour = dt_util.now().hour
-        _LOGGER.debug(
-            "AllergyriskHourlyDataExtractor current_hour=%d, element=%s",
-            current_hour,
-            element,
-        )
-
         if not isinstance(element, list) or current_hour >= len(element):
             _LOGGER.error(
                 "AllergyriskHourlyDataExtractor element is not a list "
@@ -460,7 +444,11 @@ class AllergyriskHourlyDataExtractor(DataExtractor):
 
         allergyrisk_value = element[current_hour]
         _LOGGER.debug(
-            "AllergyriskHourlyDataExtractor allergyrisk_value: %s", allergyrisk_value
+            "AllergyriskHourlyDataExtractor current_hour=%d, "
+            "element=%s, allergyrisk_value: %s",
+            current_hour,
+            element,
+            allergyrisk_value,
         )
 
         return allergyrisk_value
@@ -516,7 +504,7 @@ class AllergyriskHourlySensor(SensorAttributesMixin, SensorEntity):
         )
 
         _LOGGER.debug(
-            ("AllergyriskSensor initialized with _attr_unique_id: %s"),
+            "AllergyriskHourlySensor initialized with _attr_unique_id: %s",
             self._attr_unique_id,
         )
 
@@ -547,7 +535,4 @@ class AllergyriskHourlySensor(SensorAttributesMixin, SensorEntity):
     @callback
     def _handle_time_change(self, now: datetime) -> None:  # noqa: ARG002
         """Update the sensor at the beginning of every hour."""
-        _LOGGER.debug(
-            "AllergyriskHourlySensor updating value at the beginning of the hour."
-        )
         self.async_write_ha_state()
