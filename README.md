@@ -124,6 +124,10 @@ The Dev Container configuration is based on the official [HACS blueprint integra
 
 1. Add and configure the Polleninformation.at integration under Settings - Devices & services.
 
+### Resetting Home Assistant configuration
+
+If you already configured stuff in the Home Assistant dev container instance and you want to go back to a clean system, delete all files in the `config` directory except `configuration.yaml` and then run the develop script again.
+
 ### Running integration tests
 
 To run integration tests like `test_async_update_fetches_live_data`:
