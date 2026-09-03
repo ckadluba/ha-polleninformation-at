@@ -289,11 +289,17 @@ class TestPollenDataExtractorLogic(unittest.TestCase):
         extractor = self.PollenDataExtractor(coordinator, 23, "contamination_1")
         self.assertIsNone(extractor.get_native_value())
 
-    def test_extra_state_attributes_is_empty(self) -> None:
+    def test_extra_state_attributes_returns_matching_poll_title(self) -> None:
         coordinator = MagicMock()
-        coordinator.data = {"contamination": [{"poll_id": 23, "contamination_1": 5}]}
+        coordinator.data = {
+            "contamination": [
+                {"poll_id": 23, "contamination_1": 5, "poll_title": "Alternaria"}
+            ]
+        }
         extractor = self.PollenDataExtractor(coordinator, 23, "contamination_1")
-        self.assertEqual(extractor.get_extra_state_attributes(), {})
+        self.assertEqual(
+            extractor.get_extra_state_attributes(), {"poll_title": "Alternaria"}
+        )
 
 
 class TestAllergyriskDataExtractorLogic(unittest.TestCase):
@@ -359,6 +365,23 @@ class TestPollenSensorLogic(unittest.TestCase):
         )
         self.assertEqual(sensor.native_value, 5)
         self.assertEqual(sensor.state, 5)
+
+    def test_forecast_extra_state_attributes_returns_poll_title(self) -> None:
+        coordinator = MagicMock()
+        coordinator.data = {
+            "contamination": [
+                {"poll_id": 23, "contamination_2": 7, "poll_title": "Alternaria"}
+            ]
+        }
+        sensor = self.PollenSensor(
+            coordinator,
+            "alternaria",
+            23,
+            forecast_suffix="forecast1",
+            json_subelement_name="contamination_2",
+        )
+
+        self.assertEqual(sensor.extra_state_attributes, {"poll_title": "Alternaria"})
 
     def test_native_value_returns_none_when_pollen_id_not_found(self) -> None:
         coordinator = MagicMock()

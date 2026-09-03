@@ -272,7 +272,11 @@ class PollenDataExtractor(DataExtractor):
 
     def get_extra_state_attributes(self) -> dict:
         """Return additional sensor attributes."""
-        return {}
+        data = self._get_contamination_entry()
+        poll_title = data.get("poll_title") if data else None
+        return {
+            "poll_title": poll_title,
+        }
 
     def _get_contamination_entry(self) -> dict | None:
         """Extract the contamination entry for this pollen type."""

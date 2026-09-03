@@ -95,10 +95,28 @@ class FakeClientSession:
 
 
 class TestPollenApi(unittest.IsolatedAsyncioTestCase):
+    def test_init_sets_supported_system_language_or_english_fallback(self):
+        for system_language, expected_language in (
+            ("de", "de"),
+            ("en", "en"),
+            ("fr", "en"),
+        ):
+            with self.subTest(system_language=system_language):
+                hass = SimpleNamespace(
+                    config=SimpleNamespace(
+                        language=system_language, latitude=48.2082, longitude=16.3738
+                    )
+                )
+
+                api = PollenApi(hass, "test-api-key")
+
+                self.assertEqual(api._lang, expected_language)
+                self.assertIn(f"lang={expected_language}", api._url)
+
     async def test_async_update_sets_state_and_poll_title(self):
         # Arrange
         hass = SimpleNamespace(
-            config=SimpleNamespace(latitude=48.2082, longitude=16.3738)
+            config=SimpleNamespace(language="de", latitude=48.2082, longitude=16.3738)
         )
         api_key = "test-api-key"
         payload = {
@@ -129,7 +147,9 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
 
     async def test_async_update_uses_lat_lon_from_config(self):
         # Arrange
-        hass = SimpleNamespace(config=SimpleNamespace(latitude=47.0, longitude=15.0))
+        hass = SimpleNamespace(
+            config=SimpleNamespace(language="de", latitude=47.0, longitude=15.0)
+        )
         api_key = "test-key"
         payload = {"contamination": []}
         response = FakeResponse(payload)
@@ -150,7 +170,9 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
 
     async def test_async_update_uses_api_key_in_url(self):
         # Arrange
-        hass = SimpleNamespace(config=SimpleNamespace(latitude=47.0, longitude=15.0))
+        hass = SimpleNamespace(
+            config=SimpleNamespace(language="de", latitude=47.0, longitude=15.0)
+        )
         api_key = "my-special-key"
         payload = {"contamination": []}
         response = FakeResponse(payload)
@@ -171,7 +193,7 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
     async def test_async_update_does_not_log_api_key(self):
         # Arrange
         hass = SimpleNamespace(
-            config=SimpleNamespace(latitude=48.2082, longitude=16.3738)
+            config=SimpleNamespace(language="de", latitude=48.2082, longitude=16.3738)
         )
         api_key = "secret-api-key"
         payload = {"contamination": []}
@@ -199,7 +221,9 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
         longitude = 15.0
         api_key = "my-special-key"
         hass = SimpleNamespace(
-            config=SimpleNamespace(latitude=latitude, longitude=longitude)
+            config=SimpleNamespace(
+                language="de", latitude=latitude, longitude=longitude
+            )
         )
         payload = {"contamination": []}
         response = FakeResponse(payload)
@@ -217,12 +241,13 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
         url = session.get.call_args.args[0]
         self.assertIn(f"latitude={latitude}", url)
         self.assertIn(f"longitude={longitude}", url)
+        self.assertIn("lang=de", url)
         self.assertIn(f"apikey={api_key}", url)
 
     async def test_async_update_logs_error_with_redacted_url_and_cause(self):
         # Arrange
         hass = SimpleNamespace(
-            config=SimpleNamespace(latitude=48.2082, longitude=16.3738)
+            config=SimpleNamespace(language="de", latitude=48.2082, longitude=16.3738)
         )
         api_key = "secret-api-key"
         payload = {"contamination": []}
