@@ -51,7 +51,9 @@ class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
         latitude = float(os.getenv("POLLEN_API_TEST_LATITUDE", "48.2082"))
         longitude = float(os.getenv("POLLEN_API_TEST_LONGITUDE", "16.3738"))
         hass = SimpleNamespace(
-            config=SimpleNamespace(latitude=latitude, longitude=longitude)
+            config=SimpleNamespace(
+                language="de", latitude=latitude, longitude=longitude
+            )
         )
         api = pollen_api_class(hass, api_key)
 
