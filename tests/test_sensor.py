@@ -258,6 +258,20 @@ class TestCoordinatorSensorLogic(unittest.TestCase):
         self.assertEqual(sensor._attr_native_unit_of_measurement, "level")
         self.assertTrue(sensor._attr_has_entity_name)
 
+    def test_exposes_cached_value_after_failed_update(self) -> None:
+        """Expose the cached value when the latest coordinator update failed."""
+        sensor = self._make_sensor({"test_series_1": 4})
+        sensor.coordinator.last_update_success = False
+
+        assert sensor.available
+        assert sensor.native_value == 4
+
+    def test_unavailable_when_coordinator_has_no_data(self) -> None:
+        """Mark sensors unavailable before the first successful update."""
+        sensor = self._make_sensor(None)
+
+        assert not sensor.available
+
 
 class TestPollenDataExtractorLogic(unittest.TestCase):
     """Tests for the pollen data extraction logic."""

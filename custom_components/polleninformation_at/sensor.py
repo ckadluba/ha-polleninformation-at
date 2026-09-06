@@ -220,6 +220,17 @@ class CoordinatorSensor(SensorAttributesMixin, CoordinatorEntity, SensorEntity):
         self._initialize_sensor_attributes(name_suffix, forecast_suffix, icon)
 
     @property
+    def available(self) -> bool:
+        """
+        Return whether coordinator data is available.
+
+        By default the sensor becomes unavailable if the last coordinator update failed.
+        We want to override this behavior to make the sensor available even if the last
+        update failed, as long as we have valid data from a previous successful update.
+        """
+        return self.coordinator.data is not None
+
+    @property
     def native_value(self) -> int | None:
         """Return the current contamination level."""
         return self.data_extractor.get_native_value()
