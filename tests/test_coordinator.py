@@ -173,14 +173,13 @@ class TestPollenDataUpdateCoordinator(unittest.IsolatedAsyncioTestCase):
         """Test that options API key takes precedence over data API key."""
         hass = MagicMock()
         entry = self._entry(data_api_key="data-key", options_api_key="options-key")
-        coordinator = PollenDataUpdateCoordinator(hass, entry)
 
         with patch(
             "custom_components.polleninformation_at.coordinator.PollenApi"
         ) as mock_api_cls:
+            coordinator = PollenDataUpdateCoordinator(hass, entry)
             api_instance = mock_api_cls.return_value
             api_instance.async_update = AsyncMock()
-            api_instance.raw_response = {"contamination": []}
 
             await coordinator._async_update_data()  # noqa: SLF001
 
@@ -191,34 +190,63 @@ class TestPollenDataUpdateCoordinator(unittest.IsolatedAsyncioTestCase):
         """Test that the coordinator returns raw API response on success."""
         hass = MagicMock()
         entry = self._entry()
-        coordinator = PollenDataUpdateCoordinator(hass, entry)
 
         with patch(
             "custom_components.polleninformation_at.coordinator.PollenApi"
         ) as mock_api_cls:
+            coordinator = PollenDataUpdateCoordinator(hass, entry)
             api_instance = mock_api_cls.return_value
-            api_instance.async_update = AsyncMock()
-            api_instance.raw_response = {"contamination": [{"poll_id": 23}]}
+            api_instance.async_update = AsyncMock(
+                return_value={"contamination": [{"poll_id": 23}]}
+            )
 
             data = await coordinator._async_update_data()  # noqa: SLF001
 
         self.assertEqual(data, {"contamination": [{"poll_id": 23}]})  # noqa: PT009
 
-    async def test_wraps_api_error_in_update_failed(self) -> None:
-        """Test that API errors are wrapped in UpdateFailed."""
+    async def test_reuses_api_client_for_multiple_updates(self) -> None:
+        """Test that updates reuse the API client created by the coordinator."""
         hass = MagicMock()
         entry = self._entry()
-        coordinator = PollenDataUpdateCoordinator(hass, entry)
 
         with patch(
             "custom_components.polleninformation_at.coordinator.PollenApi"
         ) as mock_api_cls:
+            coordinator = PollenDataUpdateCoordinator(hass, entry)
+            api_instance = mock_api_cls.return_value
+            api_instance.async_update = AsyncMock(
+                side_effect=[
+                    {"contamination": [{"poll_id": 23}]},
+                    {"contamination": [{"poll_id": 24}]},
+                ]
+            )
+
+            first_data = await coordinator._async_update_data()  # noqa: SLF001
+            second_data = await coordinator._async_update_data()  # noqa: SLF001
+
+        mock_api_cls.assert_called_once_with(hass, "data-key")
+        assert first_data == {"contamination": [{"poll_id": 23}]}
+        assert second_data == {"contamination": [{"poll_id": 24}]}
+        assert api_instance.async_update.await_count == 2
+
+    async def test_wraps_api_error_in_update_failed(self) -> None:
+        """Test that API errors are wrapped in UpdateFailed."""
+        hass = MagicMock()
+        entry = self._entry()
+        previous_data = {"contamination": [{"poll_id": 23}]}
+
+        with patch(
+            "custom_components.polleninformation_at.coordinator.PollenApi"
+        ) as mock_api_cls:
+            coordinator = PollenDataUpdateCoordinator(hass, entry)
+            coordinator.data = previous_data
             api_instance = mock_api_cls.return_value
             api_instance.async_update = AsyncMock(side_effect=RuntimeError("boom"))
-            api_instance.raw_response = None
 
-            with self.assertRaises(UpdateFailed):  # noqa: PT027
+            with self.assertRaisesRegex(UpdateFailed, "boom"):
                 await coordinator._async_update_data()  # noqa: SLF001
+
+            assert coordinator.data == previous_data
 
 
 if __name__ == "__main__":

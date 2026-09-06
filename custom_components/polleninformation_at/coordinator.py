@@ -21,7 +21,6 @@ class PollenDataUpdateCoordinator(DataUpdateCoordinator):
 
     def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry) -> None:
         """Initialize the coordinator."""
-        self.config_entry = config_entry
         super().__init__(
             hass,
             _LOGGER,
@@ -29,18 +28,17 @@ class PollenDataUpdateCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(hours=DEFAULT_INTERVAL),
         )
 
-    async def _async_update_data(self) -> dict:
-        """Fetch data from the upstream API."""
+        # Initialize the API handler with the API key from the config entry
+        self.config_entry = config_entry
         api_key = self.config_entry.options.get(
             CONF_API_KEY,
             self.config_entry.data.get(CONF_API_KEY),
         )
-        api = PollenApi(self.hass, api_key)
+        self._api = PollenApi(self.hass, api_key)
 
+    async def _async_update_data(self) -> dict:
+        """Fetch data from the upstream API."""
         try:
-            await api.async_update()
-        except Exception as err:
-            msg = f"Error fetching pollen data: {err}"
-            raise UpdateFailed(msg) from err
-
-        return api.raw_response or {}
+            return await self._api.async_update()
+        except RuntimeError as err:
+            raise UpdateFailed(str(err)) from err
