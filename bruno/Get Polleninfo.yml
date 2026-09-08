@@ -34,7 +34,7 @@ settings:
 examples:
   - name: Pollen Wien 2026-08-17 17:06
     request:
-      url: https://www.polleninformation.at/api/forecast/public?country=AT&lang=de&latitude={{latitude}}&longitude={{longitude}}&apikey={{apikey}}
+      url: "{{base_url}}/api/forecast/public?country=AT&lang=en&latitude=48.2082&longitude=16.3738&apikey={{apikey}}"
       method: GET
       params:
         - name: country
@@ -44,10 +44,10 @@ examples:
           value: de
           type: query
         - name: latitude
-          value: "{{latitude}}"
+          value: "48.2082"
           type: query
         - name: longitude
-          value: "{{longitude}}"
+          value: "16.3738"
           type: query
         - name: apikey
           value: "{{apikey}}"
@@ -341,9 +341,9 @@ examples:
               ]
             }
           }
-  - name: Pollen Wien 2026-08-17 18:13
+  - name: Pollen Wien de 2026-08-17 18:13
     request:
-      url: https://www.polleninformation.at/api/forecast/public?country=AT&lang=de&latitude={{latitude}}&longitude={{longitude}}&apikey={{apikey}}
+      url: "{{base_url}}/api/forecast/public?country=AT&lang=de&latitude=48.2082&longitude=16.3738&apikey={{apikey}}"
       method: GET
       params:
         - name: country
@@ -353,10 +353,10 @@ examples:
           value: de
           type: query
         - name: latitude
-          value: "{{latitude}}"
+          value: "48.2082"
           type: query
         - name: longitude
-          value: "{{longitude}}"
+          value: "16.3738"
           type: query
         - name: apikey
           value: "{{apikey}}"
