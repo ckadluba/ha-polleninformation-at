@@ -1,0 +1,8 @@
+name: polleninformation.at
+variables:
+  - secret: true
+    name: apikey
+    description: ""
+  - name: base_url
+    value: https://www.polleninformation.at
+    description: ""
