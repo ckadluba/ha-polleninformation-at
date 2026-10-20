@@ -9,8 +9,6 @@
     "documentation": "https://github.com/ckadluba/ha-polleninformation-at",
     "iot_class": "cloud_polling",
     "issue_tracker": "https://github.com/ckadluba/ha-polleninformation-at/issues",
-    "requirements": [
-        "voluptuous"
-    ],
+    "requirements": [],
     "version": "1.6.1"
 }
