@@ -24,6 +24,26 @@ class StubAioHttpModule:
     class ClientError(Exception):  # noqa: D106
         pass
 
+    class ClientResponseError(ClientError):  # noqa: D106
+        def __init__(self, status: int = 0, message: str = "") -> None:
+            """
+            Initialize a ClientResponseError stub.
+
+            Args:
+                status: HTTP status code.
+                message: Error message.
+
+            """
+            super().__init__(message)
+            self.status = status
+            self.message = message
+
+    class ClientConnectorError(ClientError):  # noqa: D106
+        pass
+
+    class ContentTypeError(ClientResponseError):  # noqa: D106
+        pass
+
     class ClientTimeout:  # noqa: D106
         def __init__(self, total: float | None = None) -> None:
             """
@@ -40,6 +60,9 @@ class StubAioHttpModule:
 
 aiohttp_stub = ModuleType("aiohttp")
 aiohttp_stub.ClientError = StubAioHttpModule.ClientError  # type: ignore[attr-defined]
+aiohttp_stub.ClientResponseError = StubAioHttpModule.ClientResponseError  # type: ignore[attr-defined]
+aiohttp_stub.ClientConnectorError = StubAioHttpModule.ClientConnectorError  # type: ignore[attr-defined]
+aiohttp_stub.ContentTypeError = StubAioHttpModule.ContentTypeError  # type: ignore[attr-defined]
 aiohttp_stub.ClientTimeout = StubAioHttpModule.ClientTimeout  # type: ignore[attr-defined]
 aiohttp_stub.ClientSession = StubAioHttpModule.ClientSession  # type: ignore[attr-defined]
 
@@ -97,6 +120,38 @@ class FakeResponse:
 class FakeErrorResponse(FakeResponse):
     def raise_for_status(self):
         raise API_MODULE.aiohttp.ClientError("Boom")
+
+
+class FakeHttpErrorResponse(FakeResponse):
+    def __init__(self, status, message):
+        super().__init__({})
+        self._status = status
+        self._message = message
+
+    def raise_for_status(self):
+        raise API_MODULE.aiohttp.ClientResponseError(self._status, self._message)
+
+
+class FakeNetworkErrorResponse(FakeResponse):
+    def raise_for_status(self):
+        raise API_MODULE.aiohttp.ClientConnectorError("Cannot connect to host")
+
+
+class FakeInvalidJsonResponse(FakeResponse):
+    async def json(self):
+        raise ValueError("Expecting value: line 1 column 1 (char 0)")
+
+
+class FakeContentTypeErrorResponse(FakeResponse):
+    def raise_for_status(self):
+        raise API_MODULE.aiohttp.ContentTypeError(
+            200, "Attempt to decode JSON with unexpected mimetype: text/html"
+        )
+
+
+class FakeTimeoutSession:
+    def get(self, url, **kwargs):
+        raise TimeoutError
 
 
 class FakeClientSession:
@@ -319,4 +374,145 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn(api_key, logs.output[0])
         self.assertIsInstance(
             exc_info.exception.__cause__, API_MODULE.aiohttp.ClientError
+        )
+
+    async def test_async_update_logs_http_error_with_status_code(self):
+        # Arrange
+        hass = SimpleNamespace(
+            config=SimpleNamespace(language="de", latitude=48.2082, longitude=16.3738)
+        )
+        api_key = "secret-api-key"
+        response = FakeHttpErrorResponse(404, "Not Found")
+        session = FakeClientSession(response)
+
+        # Act / Assert
+        with (
+            patch(
+                "polleninformation_at_api.async_get_clientsession", return_value=session
+            ),
+            self.assertLogs(API_MODULE.__name__, level="ERROR") as logs,
+        ):
+            api = PollenApi(hass, api_key)
+            with self.assertRaises(RuntimeError) as exc_info:
+                await api.async_update()
+
+        self.assertEqual(len(logs.records), 1)
+        self.assertIn("HTTP error while fetching data from URL", logs.output[0])
+        self.assertIn("status 404", logs.output[0])
+        self.assertIn("Not Found", logs.output[0])
+        self.assertIn("<REDACTED>", logs.output[0])
+        self.assertNotIn(api_key, logs.output[0])
+        self.assertIsInstance(
+            exc_info.exception.__cause__, API_MODULE.aiohttp.ClientResponseError
+        )
+
+    async def test_async_update_logs_timeout(self):
+        # Arrange
+        hass = SimpleNamespace(
+            config=SimpleNamespace(language="de", latitude=48.2082, longitude=16.3738)
+        )
+        api_key = "secret-api-key"
+        session = FakeTimeoutSession()
+
+        # Act / Assert
+        with (
+            patch(
+                "polleninformation_at_api.async_get_clientsession", return_value=session
+            ),
+            self.assertLogs(API_MODULE.__name__, level="ERROR") as logs,
+        ):
+            api = PollenApi(hass, api_key)
+            with self.assertRaises(RuntimeError) as exc_info:
+                await api.async_update()
+
+        self.assertEqual(len(logs.records), 1)
+        self.assertIn("Timeout while fetching data from URL", logs.output[0])
+        self.assertIn("timeout: 10s", logs.output[0])
+        self.assertIn("<REDACTED>", logs.output[0])
+        self.assertNotIn(api_key, logs.output[0])
+        self.assertIsInstance(exc_info.exception.__cause__, TimeoutError)
+
+    async def test_async_update_logs_network_error(self):
+        # Arrange
+        hass = SimpleNamespace(
+            config=SimpleNamespace(language="de", latitude=48.2082, longitude=16.3738)
+        )
+        api_key = "secret-api-key"
+        response = FakeNetworkErrorResponse({})
+        session = FakeClientSession(response)
+
+        # Act / Assert
+        with (
+            patch(
+                "polleninformation_at_api.async_get_clientsession", return_value=session
+            ),
+            self.assertLogs(API_MODULE.__name__, level="ERROR") as logs,
+        ):
+            api = PollenApi(hass, api_key)
+            with self.assertRaises(RuntimeError) as exc_info:
+                await api.async_update()
+
+        self.assertEqual(len(logs.records), 1)
+        self.assertIn("Error while fetching data from URL", logs.output[0])
+        self.assertIn("Cannot connect to host", logs.output[0])
+        self.assertIn("<REDACTED>", logs.output[0])
+        self.assertNotIn(api_key, logs.output[0])
+        self.assertIsInstance(
+            exc_info.exception.__cause__, API_MODULE.aiohttp.ClientConnectorError
+        )
+
+    async def test_async_update_logs_invalid_response(self):
+        # Arrange
+        hass = SimpleNamespace(
+            config=SimpleNamespace(language="de", latitude=48.2082, longitude=16.3738)
+        )
+        api_key = "secret-api-key"
+        response = FakeInvalidJsonResponse({})
+        session = FakeClientSession(response)
+
+        # Act / Assert
+        with (
+            patch(
+                "polleninformation_at_api.async_get_clientsession", return_value=session
+            ),
+            self.assertLogs(API_MODULE.__name__, level="ERROR") as logs,
+        ):
+            api = PollenApi(hass, api_key)
+            with self.assertRaises(RuntimeError) as exc_info:
+                await api.async_update()
+
+        self.assertEqual(len(logs.records), 1)
+        self.assertIn("Invalid response from URL", logs.output[0])
+        self.assertIn("Expecting value", logs.output[0])
+        self.assertIn("<REDACTED>", logs.output[0])
+        self.assertNotIn(api_key, logs.output[0])
+        self.assertIsInstance(exc_info.exception.__cause__, ValueError)
+
+    async def test_async_update_logs_invalid_content_type(self):
+        # Arrange
+        hass = SimpleNamespace(
+            config=SimpleNamespace(language="de", latitude=48.2082, longitude=16.3738)
+        )
+        api_key = "secret-api-key"
+        response = FakeContentTypeErrorResponse({})
+        session = FakeClientSession(response)
+
+        # Act / Assert
+        with (
+            patch(
+                "polleninformation_at_api.async_get_clientsession", return_value=session
+            ),
+            self.assertLogs(API_MODULE.__name__, level="ERROR") as logs,
+        ):
+            api = PollenApi(hass, api_key)
+            with self.assertRaises(RuntimeError) as exc_info:
+                await api.async_update()
+
+        self.assertEqual(len(logs.records), 1)
+        self.assertIn("Invalid response content type from URL", logs.output[0])
+        self.assertIn("unexpected mimetype", logs.output[0])
+        self.assertIn("<REDACTED>", logs.output[0])
+        self.assertNotIn(api_key, logs.output[0])
+        self.assertIsInstance(
+            exc_info.exception.__cause__, API_MODULE.aiohttp.ContentTypeError
         )
