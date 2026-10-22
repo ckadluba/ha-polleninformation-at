@@ -1,0 +1,654 @@
+info:
+  name: Get Polleninfo
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{base_url}}/api/forecast/public?country=AT&lang=en&latitude=48.2082&longitude=16.3738&apikey={{apikey}}"
+  params:
+    - name: country
+      value: AT
+      type: query
+    - name: lang
+      value: en
+      type: query
+      description: de, en
+    - name: latitude
+      value: "48.2082"
+      type: query
+    - name: longitude
+      value: "16.3738"
+      type: query
+    - name: apikey
+      value: "{{apikey}}"
+      type: query
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+examples:
+  - name: Pollen Wien 2026-08-17 17:06
+    request:
+      url: "{{base_url}}/api/forecast/public?country=AT&lang=en&latitude=48.2082&longitude=16.3738&apikey={{apikey}}"
+      method: GET
+      params:
+        - name: country
+          value: AT
+          type: query
+        - name: lang
+          value: de
+          type: query
+        - name: latitude
+          value: "48.2082"
+          type: query
+        - name: longitude
+          value: "16.3738"
+          type: query
+        - name: apikey
+          value: "{{apikey}}"
+          type: query
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: server
+          value: openresty
+        - name: date
+          value: Mon, 17 Aug 2026 15:04:58 GMT
+        - name: content-type
+          value: application/json; charset=utf-8
+        - name: content-length
+          value: "590"
+        - name: connection
+          value: keep-alive
+        - name: access-control-allow-headers
+          value: Content-Type, Authorization
+        - name: vary
+          value: X-Forwarded-Proto,Accept-Encoding
+        - name: access-control-allow-origin
+          value: "*"
+        - name: x-ua-compatible
+          value: IE=edge
+        - name: x-content-type-options
+          value: nosniff
+        - name: x-served-by
+          value: www.polleninformation.at
+      body:
+        type: json
+        data: |-
+          {
+            "contamination": [
+              {
+                "poll_id": 23,
+                "poll_title": "Pilzsporen (Alternaria)",
+                "contamination_1": 3,
+                "contamination_2": 3,
+                "contamination_3": 3,
+                "contamination_4": 3
+              },
+              {
+                "poll_id": 7,
+                "poll_title": "Beifuß (Artemisia)",
+                "contamination_1": 2,
+                "contamination_2": 2,
+                "contamination_3": 2,
+                "contamination_4": 2
+              },
+              {
+                "poll_id": 6,
+                "poll_title": "Ragweed (Ambrosia)",
+                "contamination_1": 2,
+                "contamination_2": 2,
+                "contamination_3": 2,
+                "contamination_4": 2
+              },
+              {
+                "poll_id": 356,
+                "poll_title": "Ampfer (Rumex)",
+                "contamination_1": 1,
+                "contamination_2": 1,
+                "contamination_3": 1,
+                "contamination_4": 1
+              },
+              {
+                "poll_id": 5,
+                "poll_title": "Gräser (Poaceae)",
+                "contamination_1": 1,
+                "contamination_2": 1,
+                "contamination_3": 1,
+                "contamination_4": 1
+              },
+              {
+                "poll_id": 15,
+                "poll_title": "Nessel- und Glaskraut (Urticaceae)",
+                "contamination_1": 1,
+                "contamination_2": 1,
+                "contamination_3": 1,
+                "contamination_4": 1
+              },
+              {
+                "poll_id": 320,
+                "poll_title": "Wegerichgewächse (Plantago)",
+                "contamination_1": 1,
+                "contamination_2": 1,
+                "contamination_3": 1,
+                "contamination_4": 1
+              },
+              {
+                "poll_id": 2,
+                "poll_title": "Birke (Betula)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 326,
+                "poll_title": "Edelkastanie (Castanea)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 1,
+                "poll_title": "Erle (Alnus)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 4,
+                "poll_title": "Esche (Fraxinus)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 1107,
+                "poll_title": "Götterbaum (Ailanthus altissima)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 3,
+                "poll_title": "Hasel (Corylus)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 355,
+                "poll_title": "Linde (Tilia)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 18,
+                "poll_title": "Ölbaum (Olea)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 16,
+                "poll_title": "Platane (Platanus)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 291,
+                "poll_title": "Roggen (Secale)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 17,
+                "poll_title": "Zypressengewächse (Cupressaceae)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              }
+            ],
+            "allergyrisk": {
+              "allergyrisk_1": 8,
+              "allergyrisk_2": 8,
+              "allergyrisk_3": 8,
+              "allergyrisk_4": 8
+            },
+            "allergyrisk_hourly": {
+              "allergyrisk_hourly_1": [
+                7,
+                7,
+                7,
+                8,
+                8,
+                7,
+                6,
+                9,
+                7,
+                6,
+                5,
+                5,
+                4,
+                4,
+                4,
+                3,
+                2,
+                2,
+                2,
+                2,
+                2,
+                4,
+                5,
+                6
+              ],
+              "allergyrisk_hourly_2": [
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                7,
+                9,
+                8,
+                6,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                6,
+                7,
+                7,
+                7,
+                7,
+                6
+              ],
+              "allergyrisk_hourly_3": [
+                3,
+                3,
+                4,
+                5,
+                5,
+                5,
+                5,
+                8,
+                8,
+                8,
+                8,
+                8,
+                5,
+                2,
+                2,
+                2,
+                3,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+              ],
+              "allergyrisk_hourly_4": [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                8,
+                8,
+                8,
+                8,
+                7,
+                7,
+                6,
+                5,
+                3,
+                3,
+                3,
+                2,
+                2,
+                3,
+                3,
+                3,
+                2
+              ]
+            }
+          }
+  - name: Pollen Wien de 2026-08-17 18:13
+    request:
+      url: "{{base_url}}/api/forecast/public?country=AT&lang=de&latitude=48.2082&longitude=16.3738&apikey={{apikey}}"
+      method: GET
+      params:
+        - name: country
+          value: AT
+          type: query
+        - name: lang
+          value: de
+          type: query
+        - name: latitude
+          value: "48.2082"
+          type: query
+        - name: longitude
+          value: "16.3738"
+          type: query
+        - name: apikey
+          value: "{{apikey}}"
+          type: query
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: server
+          value: openresty
+        - name: date
+          value: Mon, 17 Aug 2026 16:13:05 GMT
+        - name: content-type
+          value: application/json; charset=utf-8
+        - name: content-length
+          value: "596"
+        - name: connection
+          value: keep-alive
+        - name: access-control-allow-headers
+          value: Content-Type, Authorization
+        - name: vary
+          value: X-Forwarded-Proto,Accept-Encoding
+        - name: access-control-allow-origin
+          value: "*"
+        - name: x-ua-compatible
+          value: IE=edge
+        - name: x-content-type-options
+          value: nosniff
+        - name: x-served-by
+          value: www.polleninformation.at
+      body:
+        type: json
+        data: |-
+          {
+            "contamination": [
+              {
+                "poll_id": 23,
+                "poll_title": "Pilzsporen (Alternaria)",
+                "contamination_1": 3,
+                "contamination_2": 3,
+                "contamination_3": 3,
+                "contamination_4": 3
+              },
+              {
+                "poll_id": 6,
+                "poll_title": "Ragweed (Ambrosia)",
+                "contamination_1": 2,
+                "contamination_2": 2,
+                "contamination_3": 2,
+                "contamination_4": 2
+              },
+              {
+                "poll_id": 7,
+                "poll_title": "Beifuß (Artemisia)",
+                "contamination_1": 2,
+                "contamination_2": 2,
+                "contamination_3": 2,
+                "contamination_4": 1
+              },
+              {
+                "poll_id": 356,
+                "poll_title": "Ampfer (Rumex)",
+                "contamination_1": 1,
+                "contamination_2": 1,
+                "contamination_3": 1,
+                "contamination_4": 1
+              },
+              {
+                "poll_id": 5,
+                "poll_title": "Gräser (Poaceae)",
+                "contamination_1": 1,
+                "contamination_2": 1,
+                "contamination_3": 1,
+                "contamination_4": 1
+              },
+              {
+                "poll_id": 15,
+                "poll_title": "Nessel- und Glaskraut (Urticaceae)",
+                "contamination_1": 1,
+                "contamination_2": 1,
+                "contamination_3": 1,
+                "contamination_4": 1
+              },
+              {
+                "poll_id": 320,
+                "poll_title": "Wegerichgewächse (Plantago)",
+                "contamination_1": 1,
+                "contamination_2": 1,
+                "contamination_3": 1,
+                "contamination_4": 1
+              },
+              {
+                "poll_id": 2,
+                "poll_title": "Birke (Betula)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 326,
+                "poll_title": "Edelkastanie (Castanea)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 1,
+                "poll_title": "Erle (Alnus)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 4,
+                "poll_title": "Esche (Fraxinus)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 1107,
+                "poll_title": "Götterbaum (Ailanthus altissima)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 3,
+                "poll_title": "Hasel (Corylus)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 355,
+                "poll_title": "Linde (Tilia)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 18,
+                "poll_title": "Ölbaum (Olea)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 16,
+                "poll_title": "Platane (Platanus)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 291,
+                "poll_title": "Roggen (Secale)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              },
+              {
+                "poll_id": 17,
+                "poll_title": "Zypressengewächse (Cupressaceae)",
+                "contamination_1": 0,
+                "contamination_2": 0,
+                "contamination_3": 0,
+                "contamination_4": 0
+              }
+            ],
+            "allergyrisk": {
+              "allergyrisk_1": 8,
+              "allergyrisk_2": 8,
+              "allergyrisk_3": 8,
+              "allergyrisk_4": 8
+            },
+            "allergyrisk_hourly": {
+              "allergyrisk_hourly_1": [
+                4,
+                6,
+                6,
+                6,
+                5,
+                6,
+                5,
+                8,
+                8,
+                7,
+                4,
+                2,
+                1,
+                1,
+                1,
+                1,
+                2,
+                1,
+                0,
+                1,
+                1,
+                2,
+                2,
+                3
+              ],
+              "allergyrisk_hourly_2": [
+                6,
+                6,
+                7,
+                7,
+                6,
+                6,
+                6,
+                9,
+                8,
+                6,
+                6,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                6,
+                6,
+                6,
+                6,
+                7
+              ],
+              "allergyrisk_hourly_3": [
+                3,
+                3,
+                3,
+                4,
+                4,
+                4,
+                5,
+                8,
+                8,
+                8,
+                6,
+                5,
+                5,
+                3,
+                2,
+                1,
+                1,
+                2,
+                3,
+                3,
+                4,
+                4,
+                3,
+                3
+              ],
+              "allergyrisk_hourly_4": [
+                3,
+                4,
+                4,
+                3,
+                2,
+                0,
+                6,
+                8,
+                8,
+                8,
+                8,
+                6,
+                5,
+                3,
+                3,
+                2,
+                3,
+                4,
+                4,
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+
+docs: This request retrieves a the pollen contamination for Vienna Austria from [polleninformation.at](http://polleninformation.at) API.
