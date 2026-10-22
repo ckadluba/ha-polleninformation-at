@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 from aiohttp import ClientTimeout
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -63,11 +64,11 @@ class PollenApi:
         """Query data from API and store the raw response."""
         _LOGGER.debug("Fetching data from URL: %s", self._redacted_url)
 
+        session = async_get_clientsession(self.hass)
         try:
-            async with (
-                aiohttp.ClientSession() as session,
-                session.get(self._url, timeout=ClientTimeout(total=10)) as response,
-            ):
+            async with session.get(
+                self._url, timeout=ClientTimeout(total=10)
+            ) as response:
                 response.raise_for_status()
                 data = await response.json()
                 self._raw_response = data
