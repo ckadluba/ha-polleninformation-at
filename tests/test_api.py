@@ -43,6 +43,22 @@ aiohttp_stub.ClientError = StubAioHttpModule.ClientError  # type: ignore[attr-de
 aiohttp_stub.ClientTimeout = StubAioHttpModule.ClientTimeout  # type: ignore[attr-defined]
 aiohttp_stub.ClientSession = StubAioHttpModule.ClientSession  # type: ignore[attr-defined]
 
+aiohttp_client_stub = ModuleType("homeassistant.helpers.aiohttp_client")
+
+
+def unpatched_get_clientsession(_hass):
+    """
+    Fail when the shared session helper is used without being patched.
+
+    Args:
+        _hass: Home Assistant instance.
+
+    """
+    msg = "async_get_clientsession must be patched in tests"
+    raise AssertionError(msg)
+
+
+aiohttp_client_stub.async_get_clientsession = unpatched_get_clientsession  # type: ignore[attr-defined]
 
 API_PATH = (
     Path(__file__).resolve().parents[1]
@@ -51,6 +67,7 @@ API_PATH = (
     / "api.py"
 )
 sys.modules.setdefault("aiohttp", aiohttp_stub)
+sys.modules.setdefault("homeassistant.helpers.aiohttp_client", aiohttp_client_stub)
 API_SPEC = importlib.util.spec_from_file_location("polleninformation_at_api", API_PATH)
 assert API_SPEC is not None
 API_MODULE = importlib.util.module_from_spec(API_SPEC)
@@ -86,12 +103,6 @@ class FakeClientSession:
     def __init__(self, response):
         self._response = response
         self.get = Mock(return_value=response)
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, exc_type, exc, tb):
-        return None
 
 
 class TestPollenApi(unittest.IsolatedAsyncioTestCase):
@@ -133,7 +144,7 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
 
         # Act
         with patch(
-            "polleninformation_at_api.aiohttp.ClientSession",
+            "polleninformation_at_api.async_get_clientsession",
             return_value=session,
         ):
             api = PollenApi(hass, api_key)
@@ -144,6 +155,43 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
         self.assertIn(f"apikey={api_key}", session.get.call_args.args[0])
         # The new API only stores the raw response
         self.assertEqual(api._raw_response, payload)
+
+    async def test_async_update_uses_shared_home_assistant_session(self):
+        # Arrange
+        hass = SimpleNamespace(
+            config=SimpleNamespace(language="de", latitude=48.2082, longitude=16.3738)
+        )
+        payload = {"contamination": []}
+        response = FakeResponse(payload)
+        session = FakeClientSession(response)
+        requested_with = []
+
+        def fake_get_clientsession(requested_hass) -> FakeClientSession:
+            requested_with.append(requested_hass)
+            return session
+
+        def fail_client_session(*_args, **_kwargs) -> None:
+            msg = "A dedicated aiohttp.ClientSession must not be created"
+            raise AssertionError(msg)
+
+        api = PollenApi(hass, "test-api-key")
+
+        # Act
+        with (
+            patch(
+                "polleninformation_at_api.async_get_clientsession",
+                fake_get_clientsession,
+            ),
+            patch(
+                "polleninformation_at_api.aiohttp.ClientSession",
+                fail_client_session,
+            ),
+        ):
+            await api.async_update()
+
+        # Assert
+        self.assertEqual(requested_with, [hass])
+        session.get.assert_called_once()
 
     async def test_async_update_uses_lat_lon_from_config(self):
         # Arrange
@@ -157,7 +205,7 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
 
         # Act
         with patch(
-            "polleninformation_at_api.aiohttp.ClientSession", return_value=session
+            "polleninformation_at_api.async_get_clientsession", return_value=session
         ):
             api = PollenApi(hass, api_key)
             await api.async_update()
@@ -180,7 +228,7 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
 
         # Act
         with patch(
-            "polleninformation_at_api.aiohttp.ClientSession", return_value=session
+            "polleninformation_at_api.async_get_clientsession", return_value=session
         ):
             api = PollenApi(hass, api_key)
             await api.async_update()
@@ -203,7 +251,7 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
         # Act
         with (
             patch(
-                "polleninformation_at_api.aiohttp.ClientSession", return_value=session
+                "polleninformation_at_api.async_get_clientsession", return_value=session
             ),
             self.assertLogs(API_MODULE.__name__, level="DEBUG") as logs,
         ):
@@ -231,7 +279,7 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
 
         # Act
         with patch(
-            "polleninformation_at_api.aiohttp.ClientSession", return_value=session
+            "polleninformation_at_api.async_get_clientsession", return_value=session
         ):
             api = PollenApi(hass, api_key)
             await api.async_update()
@@ -257,7 +305,7 @@ class TestPollenApi(unittest.IsolatedAsyncioTestCase):
         # Act / Assert
         with (
             patch(
-                "polleninformation_at_api.aiohttp.ClientSession", return_value=session
+                "polleninformation_at_api.async_get_clientsession", return_value=session
             ),
             self.assertLogs(API_MODULE.__name__, level="ERROR") as logs,
         ):

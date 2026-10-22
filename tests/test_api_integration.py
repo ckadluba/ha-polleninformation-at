@@ -4,13 +4,16 @@ import os
 import sys
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
+from unittest.mock import patch
 
 from dotenv import load_dotenv
 
 # Ensure aiohttp is not mocked or None from previous tests
 if "aiohttp" in sys.modules:
     del sys.modules["aiohttp"]
+
+import aiohttp
 
 API_PATH = (
     Path(__file__).resolve().parents[1]
@@ -20,7 +23,36 @@ API_PATH = (
 )
 
 
-def load_pollen_api_class():
+def ensure_aiohttp_client_helper() -> None:
+    """
+    Make sure `homeassistant.helpers.aiohttp_client` can be imported.
+
+    The API module imports the helper at import time. Use the real helper when
+    it is available and fall back to a stub otherwise, so the live test also
+    runs without a full Home Assistant installation.
+    """
+    if "homeassistant.helpers.aiohttp_client" in sys.modules:
+        return
+
+    try:
+        importlib.import_module("homeassistant.helpers.aiohttp_client")
+    except ImportError:
+        for module_name in [
+            name
+            for name in sys.modules
+            if name == "homeassistant" or name.startswith("homeassistant.")
+        ]:
+            del sys.modules[module_name]
+
+        stub = ModuleType("homeassistant.helpers.aiohttp_client")
+        stub.async_get_clientsession = lambda _hass: None
+        sys.modules["homeassistant.helpers.aiohttp_client"] = stub
+
+
+def load_pollen_api_module():
+    """Load the API module so its shared session helper can be patched."""
+    ensure_aiohttp_client_helper()
+
     api_spec = importlib.util.spec_from_file_location(
         "polleninformation_at_api_integration",
         API_PATH,
@@ -34,7 +66,7 @@ def load_pollen_api_class():
     if api_spec.loader is None:
         raise ImportError(f"api_spec.loader is None for {API_PATH}")
     api_spec.loader.exec_module(api_module)
-    return getattr(api_module, "PollenApi", api_module.PollenApi)
+    return api_module
 
 
 class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
@@ -46,7 +78,8 @@ class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
                 "Set POLLENINFORMATION_AT_API_KEY to run the live API integration test."
             )
 
-        pollen_api_class = load_pollen_api_class()
+        api_module = load_pollen_api_module()
+        pollen_api_class = getattr(api_module, "PollenApi", api_module.PollenApi)
 
         latitude = float(os.getenv("POLLEN_API_TEST_LATITUDE", "48.2082"))
         longitude = float(os.getenv("POLLEN_API_TEST_LONGITUDE", "16.3738"))
@@ -58,7 +91,11 @@ class TestPollenApiIntegration(unittest.IsolatedAsyncioTestCase):
         api = pollen_api_class(hass, api_key)
 
         # Act
-        await api.async_update()
+        async with aiohttp.ClientSession() as session:
+            with patch.object(
+                api_module, "async_get_clientsession", return_value=session
+            ):
+                await api.async_update()
 
         # Assert
         self.assertIsInstance(api._raw_response, dict)
