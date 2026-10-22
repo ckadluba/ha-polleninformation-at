@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
+REQUEST_TIMEOUT = 10
+
 
 class PollenApi:
     """Class to handle API access for Polleninformation.at."""
@@ -67,13 +69,39 @@ class PollenApi:
         session = async_get_clientsession(self.hass)
         try:
             async with session.get(
-                self._url, timeout=ClientTimeout(total=10)
+                self._url, timeout=ClientTimeout(total=REQUEST_TIMEOUT)
             ) as response:
                 response.raise_for_status()
                 data = await response.json()
                 self._raw_response = data
                 return data
+        except TimeoutError as err:
+            error_msg = (
+                f"Timeout while fetching data from URL: {self._redacted_url} "
+                f"(timeout: {REQUEST_TIMEOUT}s)"
+            )
+            _LOGGER.exception(error_msg)
+            raise RuntimeError(error_msg) from err
+        except aiohttp.ContentTypeError as err:
+            error_msg = (
+                f"Invalid response content type from URL: {self._redacted_url}: {err}"
+            )
+            _LOGGER.exception(error_msg)
+            raise RuntimeError(error_msg) from err
+        except aiohttp.ClientResponseError as err:
+            error_msg = (
+                f"HTTP error while fetching data from URL: {self._redacted_url}: "
+                f"status {err.status} ({err.message})"
+            )
+            _LOGGER.exception(error_msg)
+            raise RuntimeError(error_msg) from err
         except aiohttp.ClientError as err:
-            error_msg = f"Error fetching data from URL: {self._redacted_url}"
+            error_msg = (
+                f"Error while fetching data from URL: {self._redacted_url}: {err}"
+            )
+            _LOGGER.exception(error_msg)
+            raise RuntimeError(error_msg) from err
+        except (TypeError, ValueError) as err:
+            error_msg = f"Invalid response from URL: {self._redacted_url}: {err}"
             _LOGGER.exception(error_msg)
             raise RuntimeError(error_msg) from err
